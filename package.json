@@ -4,7 +4,7 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "start": "npm run build && tsx index.ts",
+    "start": "npm run build && tsx server/index.ts",
     "build": "npm run build-clear && npm run build-webpack",
     "build-clear": "rimraf build",
     "build-webpack": "webpack",
@@ -39,7 +39,6 @@
     "socket.io": "^4.7.5",
     "socket.io-client": "^4.7.5",
     "ts-loader": "^9.5.1",
-    "tsx": "^4.16.2",
-    "zod": "^3.23.8"
+    "tsx": "^4.16.2"
   }
 }

@@ -1,28 +1,14 @@
-import { z } from "zod";
+import { Room } from "./room";
 
-export const zodLoginEvent = z.tuple([
-  z.object({
-    username: z.string(),
-  }),
-]);
+type JoinEvent = [
+  {
+    username: string;
+  },
+  (room: Room) => void,
+];
 
 export type SocketIoServerListenEvents = {
-  join: UnhandledCallback<ReturnType<typeof handleEvent<typeof zodLoginEvent>>>;
+  join: EventWith<JoinEvent>;
 };
 
-export function handleEvent<T extends z.ZodType<unknown[]>>(
-  zodType: T,
-  callback: (...data: z.infer<T>) => void,
-): UnhandledCallback<(...data: z.infer<T>) => void> {
-  return ((...data: unknown[]) => {
-    const parsedData = zodType.safeParse(data);
-
-    if (parsedData.success) {
-      callback(...parsedData.data);
-    } else {
-      console.error("Error parsing data", parsedData.error.errors);
-    }
-  }) as UnhandledCallback<(...data: z.infer<T>) => void>;
-}
-
-type UnhandledCallback<T> = T & "unhandled";
+type EventWith<T extends unknown[]> = (...params: T) => void;

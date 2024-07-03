@@ -4,11 +4,10 @@ import { createServer } from "node:http";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { Server } from "socket.io";
-import {
-  handleEvent,
-  zodLoginEvent,
-  type SocketIoServerListenEvents,
-} from "./types/socket-io-events";
+import { type SocketIoServerListenEvents } from "../types/socket-io-events";
+import { joinPlayer } from "./world";
+
+const SERVER_PORT = 80;
 
 const app = express();
 const server = createServer(app);
@@ -25,14 +24,21 @@ app.get("/", (req, res) => {
 
 io.on("connection", (socket) => {
   console.log("User connected");
-  socket.on(
-    "join",
-    handleEvent(zodLoginEvent, (event) => {
-      console.log(`User "${event.username}" joined`);
-    }),
-  );
+
+  socket.on("disconnect", (reason) => {
+    console.log(`User disconnected. Reason: ${reason}`);
+
+    // TODO: Handle disconnection. Emit disconnection event, and clear player from room
+  });
+
+  socket.on("join", (event, callback) => {
+    console.log(`User "${event.username}" joined`);
+
+    const room = joinPlayer(socket, event.username);
+    callback(room);
+  });
 });
 
-server.listen(80, () => {
-  console.log("server running at http://localhost:3000");
+server.listen(SERVER_PORT, () => {
+  console.log(`Server running at http://localhost:${SERVER_PORT}`);
 });
