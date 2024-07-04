@@ -1,14 +1,26 @@
+import { Player } from "./player";
 import { Room } from "./room";
 
-type JoinEvent = [
-  {
-    username: string;
-  },
-  (room: Room) => void,
-];
-
-export type SocketIoServerListenEvents = {
-  join: EventWith<JoinEvent>;
+export type SocketIoClientSentEvents = {
+  requestJoin: EventWith<
+    [
+      {
+        username: string;
+      },
+      (room: Room, player: Player) => void,
+    ]
+  >;
 };
 
-type EventWith<T extends unknown[]> = (...params: T) => void;
+export type SocketIoServerSentEvents = {
+  playerJoined: EventWith<{
+    player: Player;
+  }>;
+  playerLeft: EventWith<{
+    player: Player;
+  }>;
+};
+
+type EventWith<T> = T extends unknown[]
+  ? (...params: T) => void
+  : (data: T) => void;

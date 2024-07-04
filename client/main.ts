@@ -1,12 +1,15 @@
 import { io, type Socket } from "socket.io-client";
-import { SocketIoServerListenEvents } from "../types/socket-io-events";
+import type {
+  SocketIoClientSentEvents,
+  SocketIoServerSentEvents,
+} from "../types/socket-io-events";
 
-let socket: Socket<Record<string, never>, SocketIoServerListenEvents>;
+let socket: Socket<SocketIoServerSentEvents, SocketIoClientSentEvents>;
 
 function joinRoom(username: string) {
   socket = io();
 
-  socket.emit("join", { username }, (room) => {
+  socket.emit("requestJoin", { username }, (room) => {
     console.log("Joined room", room);
   });
 }
