@@ -1,8 +1,8 @@
-import { Socket } from "socket.io";
-import { Player } from "../types/player";
-import { Room } from "../types/room";
+import { assert } from "../common/errors";
+import { Player } from "../common/types/player";
+import { Room } from "../common/types/room";
 import { updateRoom } from "./logic";
-import { roomBroadcastGroup } from "./socket-io-groups";
+import { server, Socket } from "./socket-io";
 
 const ROOM_SIZE = { x: 100, y: 100 };
 const ROOM_GRAVITY = { x: 0, y: -10 };
@@ -27,6 +27,7 @@ export const world: World = {
  * Player sockets by their socket ID.
  */
 export const socketsById: Record<string, Socket> = {};
+
 /**
  * Players by their socket ID.
  */
@@ -35,9 +36,11 @@ export const playersById: Record<string, Player> = {};
 let nextRoomId = 1;
 
 export function joinPlayer(socket: Socket, username: string) {
+  // TODO: Validate username
+
   const room = findOrCreateRoomWithSpace();
 
-  socket.join(roomBroadcastGroup(room));
+  server.addToRoom(socket, room);
 
   const player: Player = {
     id: socket.id,
@@ -118,5 +121,8 @@ export function getPlayer(socket: Socket) {
 }
 
 export function getRoom(player: Player) {
-  return world.rooms[player.roomId];
+  const room = world.rooms[player.roomId];
+  assert(room, `Room ${player.roomId} of player ${player.id} not found`);
+
+  return room;
 }

@@ -19,6 +19,9 @@ export type SocketIoServerSentEvents = {
   playerLeft: EventWith<{
     player: Player;
   }>;
+  roomUpdated: EventWith<{
+    room: Room;
+  }>;
 };
 
 type EventWith<T> = T extends unknown[]

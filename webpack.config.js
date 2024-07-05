@@ -11,10 +11,10 @@ export default {
   module: {
     rules: [
       {
-        test: /\.tsx?$/,
+        test: /\.ts$/,
         use: "ts-loader",
-        include: /client/,
-        exclude: /node_modules/,
+        include: /client|common/,
+        exclude: /node_modules|server/,
       },
     ],
   },
