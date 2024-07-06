@@ -1,5 +1,6 @@
 import { Player } from "./player";
 import { Room } from "./room";
+import { Vector } from "./vector";
 
 export type SocketIoClientSentEvents = {
   requestJoin: EventWith<
@@ -10,6 +11,9 @@ export type SocketIoClientSentEvents = {
       (room: Room, player: Player) => void,
     ]
   >;
+  updateAcceleration: EventWith<{
+    acceleration: Vector;
+  }>;
 };
 
 export type SocketIoServerSentEvents = {
@@ -17,6 +21,9 @@ export type SocketIoServerSentEvents = {
     player: Player;
   }>;
   playerLeft: EventWith<{
+    player: Player;
+  }>;
+  playerUpdated: EventWith<{
     player: Player;
   }>;
   roomUpdated: EventWith<{

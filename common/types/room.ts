@@ -33,4 +33,22 @@ export type Room = {
    * In meters per second squared.
    */
   gravity: Vector;
+
+  /**
+   * Maximum speed a player can reach.
+   *
+   * Used as a sanity check. Friction should take care of limiting speed.
+   *
+   * In meters per second.
+   */
+  maxPlayerSpeed: number;
+
+  /**
+   * Maximum acceleration a player can reach.
+   *
+   * Used to control input and avoid cheating.
+   *
+   * In meters per second squared.
+   */
+  maxPlayerAcceleration: number;
 };

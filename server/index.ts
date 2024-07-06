@@ -1,3 +1,5 @@
+import { assert } from "../common/errors";
+import { clampMagnitude } from "../common/vectors";
 import { server } from "./socket-io";
 import { disconnectPlayer, getPlayer, getRoom, joinPlayer } from "./world";
 
@@ -30,6 +32,19 @@ server.io.on("connection", (socket) => {
     callback(room, player);
 
     server.broadcastRoom(room).emit("playerJoined", { player });
+  });
+
+  socket.on("updateAcceleration", (event) => {
+    const player = getPlayer(socket);
+    assert(player, `Player ${socket.id} not found`);
+    const room = getRoom(player);
+
+    player.acceleration = clampMagnitude(
+      event.acceleration,
+      room.maxPlayerAcceleration,
+    );
+
+    server.broadcastRoom(room).emit("playerUpdated", { player });
   });
 });
 

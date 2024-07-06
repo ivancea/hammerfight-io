@@ -4,21 +4,48 @@ import { Text } from "two.js/src/text";
 import { assert } from "../common/errors";
 import { Player } from "../common/types/player";
 import { Room } from "../common/types/room";
+import { Vector } from "../common/types/vector";
+import backgroundImage from "./assets/background.jpg";
 import { Context } from "./context";
+
+type EventHandlers = {
+  onMouseMove: (windowSize: Vector, position: Vector) => void;
+};
 
 let two: Two | undefined;
 
-export function initializeGame(context: Context) {
+export function initializeGame(context: Context, eventHandlers: EventHandlers) {
   const element = document.getElementById("game");
   assert(element, "Could not find game element");
 
   two = new Two().appendTo(element);
+
+  const backgroundTexture = two.makeTexture(backgroundImage);
+  const backgroundRect = two.makeRectangle(
+    context.room.size.x / 2,
+    context.room.size.y / 2,
+    context.room.size.x,
+    context.room.size.y,
+  );
+
+  backgroundRect.id = "background";
+  backgroundRect.fill = backgroundTexture;
 
   for (const player of Object.values(context.room.players)) {
     internalAddPlayer(player);
   }
 
   centerPlayer(context);
+
+  getDomElement().addEventListener("mousemove", (event) => {
+    assert(two, "Game not initialized");
+
+    const rect = getDomElement().getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+
+    eventHandlers.onMouseMove({ x: rect.width, y: rect.height }, { x, y });
+  });
 
   two.play();
 }
@@ -28,7 +55,7 @@ export function stopGame() {
 
   two.pause();
 
-  const currentElement = two.renderer.domElement as HTMLElement;
+  const currentElement = getDomElement();
   currentElement.parentNode?.removeChild(currentElement);
 
   two = undefined;
@@ -124,6 +151,12 @@ function centerPlayer(context: Context) {
     two.width / 2 - player.position.x,
     two.height / 2 - player.position.y,
   );
+}
+
+function getDomElement() {
+  assert(two, "Game not initialized");
+
+  return two.renderer.domElement as HTMLElement;
 }
 
 function playerGroupId(player: Player) {

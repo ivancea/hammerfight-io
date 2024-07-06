@@ -47,6 +47,14 @@ export type Player = {
   velocity: Vector;
 
   /**
+   * The acceleration of the player.
+   * Based on the player input.
+   *
+   * In meters per second squared.
+   */
+  acceleration: Vector;
+
+  /**
    * The weapon type and position. To be done.
    */
   weapon: undefined;

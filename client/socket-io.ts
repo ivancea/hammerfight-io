@@ -45,6 +45,12 @@ export function joinRoom(username: string) {
     removePlayer(context, player);
   });
 
+  socket.on("playerUpdated", ({ player }) => {
+    assert(context, "Context should be defined");
+
+    updatePlayer(context, player);
+  });
+
   socket.on("roomUpdated", ({ room }) => {
     assert(context, "Context should be defined");
 
@@ -70,7 +76,32 @@ export function joinRoom(username: string) {
       playerId: player.id,
     };
 
-    initializeGame(context);
+    initializeGame(context, {
+      onMouseMove(windowSize, position) {
+        assert(socket, "Socket should be defined");
+
+        const baseSize = Math.min(windowSize.x, windowSize.y) * 0.6;
+
+        // [-1, 1] range
+        const xAcc = Math.max(
+          -1,
+          Math.min(1, (position.x * 2 - windowSize.x) / baseSize),
+        );
+        const yAcc = Math.max(
+          -1,
+          Math.min(1, (position.y * 2 - windowSize.y) / baseSize),
+        );
+
+        const acceleration = {
+          x: xAcc * room.maxPlayerAcceleration,
+          y: yAcc * room.maxPlayerAcceleration,
+        };
+
+        console.log("Sending acceleration", acceleration);
+
+        socket.emit("updateAcceleration", { acceleration });
+      },
+    });
   });
 }
 

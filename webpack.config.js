@@ -13,8 +13,15 @@ export default {
       {
         test: /\.ts$/,
         use: "ts-loader",
-        include: /client|common/,
-        exclude: /node_modules|server/,
+        include: [
+          path.resolve(__dirname, "client"),
+          path.resolve(__dirname, "common"),
+        ],
+      },
+      {
+        test: /\.jpg$/,
+        include: path.resolve(__dirname, "client/assets"),
+        type: "asset/resource",
       },
     ],
   },
@@ -23,7 +30,9 @@ export default {
   },
   output: {
     filename: "bundle.js",
+    assetModuleFilename: "assets/[hash].[name][ext][query]",
     path: path.resolve(__dirname, "build"),
+    clean: true,
   },
   plugins: [
     new HtmlWebpackPlugin({

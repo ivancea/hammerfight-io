@@ -5,8 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "npm run build && tsx server/index.ts",
-    "build": "npm run build-clear && npm run build-webpack",
-    "build-clear": "rimraf build",
+    "build": "npm run build-webpack",
     "build-webpack": "webpack",
     "format": "prettier --write .",
     "lint": "eslint .",
@@ -38,7 +37,6 @@
     "cross-env": "^7.0.3",
     "express": "^4.19.2",
     "prettier": "^3.3.2",
-    "rimraf": "^5.0.7",
     "socket.io": "^4.7.5",
     "socket.io-client": "^4.7.5",
     "tsx": "^4.16.2",

@@ -1,11 +1,14 @@
 import { assert } from "../common/errors";
 import { Player } from "../common/types/player";
 import { Room } from "../common/types/room";
+import { divide } from "../common/vectors";
 import { updateRoom } from "./logic";
 import { server, Socket } from "./socket-io";
 
-const ROOM_SIZE = { x: 100, y: 100 };
+const ROOM_SIZE = { x: 10_000, y: 10_000 };
 const ROOM_GRAVITY = { x: 0, y: -10 };
+const MAX_PLAYER_ACCELERATION = 500;
+const MAX_PLAYER_SPEED = 500;
 
 const MAX_PLAYERS_PER_ROOM = 3;
 const MAX_PLAYER_HEALTH = 100;
@@ -50,8 +53,9 @@ export function joinPlayer(socket: Socket, username: string) {
     health: MAX_PLAYER_HEALTH,
     radius: PLAYER_RADIUS,
     weight: PLAYER_WEIGHT,
-    position: { x: 0, y: 0 }, // TODO: Find an empty position
+    position: divide(room.size, 2), // TODO: Find an empty position
     velocity: { x: 0, y: 0 },
+    acceleration: { x: 0, y: 0 },
 
     weapon: undefined,
   };
@@ -101,15 +105,21 @@ function createRoom(): Room {
     players: {},
     size: ROOM_SIZE,
     gravity: ROOM_GRAVITY,
+    maxPlayerSpeed: MAX_PLAYER_SPEED,
+    maxPlayerAcceleration: MAX_PLAYER_ACCELERATION,
   };
 
   world.rooms[newRoom.id] = newRoom;
+
+  let lastUpdateTime = Date.now() / 1000;
 
   const intervalId = setInterval(() => {
     if (!world.rooms[newRoom.id]) {
       clearInterval(intervalId);
     } else {
-      updateRoom(newRoom);
+      const newUpdateTime = Date.now() / 1000;
+      updateRoom(newRoom, newUpdateTime - lastUpdateTime);
+      lastUpdateTime = newUpdateTime;
     }
   }, 10);
 
