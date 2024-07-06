@@ -4,29 +4,43 @@ import { Text } from "two.js/src/text";
 import { assert } from "../common/errors";
 import { Player } from "../common/types/player";
 import { Room } from "../common/types/room";
-import { Vector } from "../common/types/vector";
+import { Vector } from "../common/vector";
 import backgroundImage from "./assets/background.jpg";
 import { Context } from "./context";
 
 type EventHandlers = {
-  onMouseMove: (windowSize: Vector, position: Vector) => void;
+  onMouseMove: (mousePosition: Vector) => void;
 };
 
 let two: Two | undefined;
 
-export function initializeGame(context: Context, eventHandlers: EventHandlers) {
+export function initializeGraphics(
+  context: Context,
+  eventHandlers: EventHandlers,
+) {
   const element = document.getElementById("game");
   assert(element, "Could not find game element");
 
   two = new Two().appendTo(element);
 
-  const backgroundTexture = two.makeTexture(backgroundImage);
   const backgroundRect = two.makeRectangle(
     context.room.size.x / 2,
     context.room.size.y / 2,
     context.room.size.x,
     context.room.size.y,
   );
+  const backgroundTexture = two.makeTexture(backgroundImage, () => {
+    const image = backgroundTexture.image as HTMLImageElement;
+    const imageWidth = image.naturalWidth;
+    const imageHeight = image.naturalHeight;
+
+    backgroundRect.width = imageWidth;
+    backgroundRect.height = imageHeight;
+    backgroundRect.scale = new Two.Vector(
+      context.room.size.x / imageWidth,
+      context.room.size.y / imageHeight,
+    );
+  });
 
   backgroundRect.id = "background";
   backgroundRect.fill = backgroundTexture;
@@ -44,13 +58,13 @@ export function initializeGame(context: Context, eventHandlers: EventHandlers) {
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
 
-    eventHandlers.onMouseMove({ x: rect.width, y: rect.height }, { x, y });
+    eventHandlers.onMouseMove({ x, y });
   });
 
   two.play();
 }
 
-export function stopGame() {
+export function destroyGraphics() {
   assert(two, "Game not initialized");
 
   two.pause();
@@ -95,6 +109,46 @@ export function removePlayer(context: Context, player: Player) {
   internalRemovePlayer(player);
 
   centerPlayer(context);
+}
+
+export function getScreenPlayerPosition(context: Context) {
+  assert(two, "Game not initialized");
+
+  const player = context.room.players[context.playerId];
+  assert(player, "Player not found");
+
+  return {
+    x: player.position.x + two.scene.translation.x,
+    y: player.position.y + two.scene.translation.y,
+  };
+
+  /*const rect = getDomElement().getBoundingClientRect();
+  const minRadius = Math.min(rect.width, rect.height) * 0.1;
+
+  const currentTranslation = two.scene.translation;
+  const targetTranslation = new Two.Vector(
+    two.width / 2 - player.position.x,
+    two.height / 2 - player.position.y,
+  );
+
+  const delta = targetTranslation.clone().sub(currentTranslation);
+
+  // If inside a minimum radius, don't move
+  if (delta.length() < minRadius) {
+    return;
+  }
+
+  const translationDelta = currentTranslation
+    .clone()
+    .add(delta.setLength(delta.length() - minRadius));
+
+  two.scene.translation = translationDelta;*/
+}
+
+export function getScreenSize() {
+  const rect = getDomElement().getBoundingClientRect();
+
+  return { x: rect.width, y: rect.height };
 }
 
 function internalUpdatePlayer(player: Player) {
@@ -147,10 +201,27 @@ function centerPlayer(context: Context) {
   const player = context.room.players[context.playerId];
   assert(player, "Player not found");
 
-  two.scene.translation.set(
+  const rect = getDomElement().getBoundingClientRect();
+  const minRadius = Math.min(rect.width, rect.height) * 0.1;
+
+  const currentTranslation = two.scene.translation;
+  const targetTranslation = new Two.Vector(
     two.width / 2 - player.position.x,
     two.height / 2 - player.position.y,
   );
+
+  const delta = targetTranslation.clone().sub(currentTranslation);
+
+  // If inside a minimum radius, don't move
+  if (delta.length() < minRadius) {
+    return;
+  }
+
+  const translationDelta = currentTranslation
+    .clone()
+    .add(delta.setLength(delta.length() - minRadius));
+
+  two.scene.translation = translationDelta;
 }
 
 function getDomElement() {

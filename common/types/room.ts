@@ -1,5 +1,5 @@
+import { Vector } from "../vector";
 import { Player } from "./player";
-import { Vector } from "./vector";
 
 /**
  * Container of all the data and players inside a game room.

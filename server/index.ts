@@ -1,5 +1,5 @@
 import { assert } from "../common/errors";
-import { clampMagnitude } from "../common/vectors";
+import { clampMagnitude } from "../common/vector";
 import { server } from "./socket-io";
 import { disconnectPlayer, getPlayer, getRoom, joinPlayer } from "./world";
 

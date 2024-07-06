@@ -1,4 +1,7 @@
-import { Vector } from "./types/vector";
+export type Vector = {
+  x: number;
+  y: number;
+};
 
 export function add(vector: Vector, ...vectors: Vector[]) {
   return {

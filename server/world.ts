@@ -1,11 +1,11 @@
 import { assert } from "../common/errors";
 import { Player } from "../common/types/player";
 import { Room } from "../common/types/room";
-import { divide } from "../common/vectors";
+import { divide } from "../common/vector";
 import { updateRoom } from "./logic";
 import { server, Socket } from "./socket-io";
 
-const ROOM_SIZE = { x: 10_000, y: 10_000 };
+const ROOM_SIZE = { x: 2_000, y: 2_000 };
 const ROOM_GRAVITY = { x: 0, y: -10 };
 const MAX_PLAYER_ACCELERATION = 500;
 const MAX_PLAYER_SPEED = 500;

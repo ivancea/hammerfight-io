@@ -1,6 +1,6 @@
+import { Vector } from "../vector";
 import { Player } from "./player";
 import { Room } from "./room";
-import { Vector } from "./vector";
 
 export type SocketIoClientSentEvents = {
   requestJoin: EventWith<

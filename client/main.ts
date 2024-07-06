@@ -1,4 +1,5 @@
 import { joinRoom } from "./socket-io";
+import "./styles/index.scss";
 
 function main() {
   document

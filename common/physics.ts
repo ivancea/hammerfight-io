@@ -1,5 +1,5 @@
 import { Room } from "./types/room";
-import { add, clamp, clampMagnitude, multiply } from "./vectors";
+import { add, clamp, clampMagnitude, multiply } from "./vector";
 
 export function applyPhysics(room: Room, elapsedTime: number) {
   for (const player of Object.values(room.players)) {

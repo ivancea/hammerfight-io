@@ -1,4 +1,5 @@
 import HtmlWebpackPlugin from "html-webpack-plugin";
+import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -17,6 +18,11 @@ export default {
           path.resolve(__dirname, "client"),
           path.resolve(__dirname, "common"),
         ],
+      },
+      {
+        test: /\.s?css$/,
+        use: [MiniCssExtractPlugin.loader, "css-loader", "sass-loader"],
+        include: path.resolve(__dirname, "client/styles"),
       },
       {
         test: /\.jpg$/,
@@ -38,5 +44,6 @@ export default {
     new HtmlWebpackPlugin({
       template: "./client/index.html",
     }),
+    new MiniCssExtractPlugin(),
   ],
 };
