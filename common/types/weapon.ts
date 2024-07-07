@@ -22,9 +22,9 @@ export type FlailWeapon = BaseWeapon & {
 export function makeFlailWeapon(position: Vector): FlailWeapon {
   return {
     type: "flail",
-    weight: 10,
-    radius: 4,
-    chainLength: 50,
+    weight: 100,
+    radius: 10,
+    chainLength: 80,
     position,
     velocity: { x: 0, y: 0 },
     maxSpeed: 1000,

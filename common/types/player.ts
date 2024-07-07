@@ -76,7 +76,7 @@ export function makePlayer(
     username,
     maxHealth: 100,
     health: 100,
-    radius: 10,
+    radius: 20,
     weight: 50,
     position,
     velocity: { x: 0, y: 0 },

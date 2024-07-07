@@ -176,7 +176,35 @@ function internalAddPlayer(player: Player) {
   const playerName = two.makeText(player.username, 0, 0);
   playerName.id = playerNameId(player);
 
-  const playerGroup = two.makeGroup(playerBody, playerName);
+  const playerHealthBackground = two.makeRectangle(
+    0,
+    -player.radius - 5,
+    player.radius * 2,
+    6,
+  );
+  playerHealthBackground.id = playerHealthBackgroundId(player);
+  playerHealthBackground.fill = "#111111";
+  playerHealthBackground.noStroke();
+
+  const healthPercentage = player.health / player.maxHealth;
+  const totalHealthPixels = player.radius * 2 - 2;
+  const healthPixels = Math.ceil(totalHealthPixels * healthPercentage);
+  const playerHealthHealth = two.makeRectangle(
+    (totalHealthPixels - healthPixels) / 2,
+    -player.radius - 5,
+    healthPixels,
+    4,
+  );
+  playerHealthHealth.id = playerHealthHealthId(player);
+  playerHealthHealth.fill = "#FF0000";
+  playerHealthHealth.noStroke();
+
+  const playerGroup = two.makeGroup(
+    playerBody,
+    playerName,
+    playerHealthBackground,
+    playerHealthHealth,
+  );
   playerGroup.id = playerGroupId(player);
   playerGroup.position.set(player.position.x, player.position.y);
 
@@ -272,6 +300,14 @@ function playerBodyId(player: Player) {
 
 function playerNameId(player: Player) {
   return `player__name__${player.id}`;
+}
+
+function playerHealthBackgroundId(player: Player) {
+  return `player__health_background__${player.id}`;
+}
+
+function playerHealthHealthId(player: Player) {
+  return `player__health_health__${player.id}`;
 }
 
 function playerVelocityId(player: Player) {

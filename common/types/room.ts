@@ -81,7 +81,7 @@ export function makeRoom(roomId: number): Room {
     },
     size: { x: 2_000, y: 2_000 },
     gravity: { x: 0, y: 200 },
-    maxPlayerSpeed: 500,
-    maxPlayerAcceleration: 500,
+    maxPlayerSpeed: 300,
+    maxPlayerAcceleration: 300,
   };
 }
