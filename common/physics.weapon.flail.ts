@@ -1,16 +1,13 @@
-import { handleCirclesCollision } from "./physics.common";
+import { Damage } from "./damage";
+import {
+  handleCircleCollisionWithLimits,
+  handleCirclesCollision,
+} from "./physics.common";
 import { ELASTICITY } from "./physics.constants";
 import { Player } from "./types/player";
 import { Room } from "./types/room";
 import { FlailWeapon } from "./types/weapon";
-import {
-  add,
-  clamp,
-  clampMagnitude,
-  magnitude,
-  multiply,
-  subtract,
-} from "./vector";
+import { add, clampMagnitude, magnitude, multiply, subtract } from "./vector";
 
 export function moveFlailWeapon(
   weapon: FlailWeapon,
@@ -20,16 +17,10 @@ export function moveFlailWeapon(
 ) {
   const acceleration = room.gravity;
 
-  const newPosition = clamp(
-    add(
-      weapon.position,
-      multiply(weapon.velocity, elapsedTime),
-      multiply(acceleration, 0.5 * elapsedTime * elapsedTime),
-    ),
-    0,
-    room.size.x,
-    0,
-    room.size.y,
+  const newPosition = add(
+    weapon.position,
+    multiply(weapon.velocity, elapsedTime),
+    multiply(acceleration, 0.5 * elapsedTime * elapsedTime),
   );
   const newVelocity = clampMagnitude(
     add(weapon.velocity, multiply(acceleration, elapsedTime)),
@@ -63,13 +54,24 @@ export function handleFlailWeaponCollisions(
   weapon: FlailWeapon,
   player: Player,
   room: Room,
+  elapsedTime: number,
+  onPlayerDamage: (damage: Damage) => void,
 ) {
   for (const otherPlayer of Object.values(room.players)) {
     if (player.id === otherPlayer.id) {
       continue;
     }
 
-    handleCirclesCollision(weapon, otherPlayer);
+    const [, otherPlayerDamage] = handleCirclesCollision(weapon, otherPlayer);
+
+    if (otherPlayerDamage > 0) {
+      onPlayerDamage({
+        type: "weaponCollision",
+        damagedPlayerId: otherPlayer.id,
+        playerId: player.id,
+        amount: otherPlayerDamage / elapsedTime,
+      });
+    }
 
     switch (otherPlayer.weapon.type) {
       case "flail":
@@ -77,6 +79,12 @@ export function handleFlailWeaponCollisions(
         break;
     }
   }
+}
 
-  // TODO: Reapply the chain constraint?
+export function handleFlailWeaponLimitsCollisions(
+  weapon: FlailWeapon,
+  player: Player,
+  room: Room,
+) {
+  handleCircleCollisionWithLimits(weapon, room.size.x, room.size.y);
 }

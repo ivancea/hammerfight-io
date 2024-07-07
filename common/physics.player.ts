@@ -1,7 +1,11 @@
-import { handleCirclesCollision } from "./physics.common";
+import { Damage } from "./damage";
+import {
+  handleCircleCollisionWithLimits,
+  handleCirclesCollision,
+} from "./physics.common";
 import { Player } from "./types/player";
 import { Room } from "./types/room";
-import { add, clamp, clampMagnitude, multiply } from "./vector";
+import { add, clampMagnitude, multiply } from "./vector";
 
 export function movePlayer(player: Player, room: Room, elapsedTime: number) {
   // Acceleration increases with the difference between the player's velocity and the expected velocity
@@ -18,16 +22,10 @@ export function movePlayer(player: Player, room: Room, elapsedTime: number) {
       ),
   };
 
-  const newPosition = clamp(
-    add(
-      player.position,
-      multiply(player.velocity, elapsedTime),
-      multiply(acceleration, 0.5 * elapsedTime * elapsedTime),
-    ),
-    0,
-    room.size.x,
-    0,
-    room.size.y,
+  const newPosition = add(
+    player.position,
+    multiply(player.velocity, elapsedTime),
+    multiply(acceleration, 0.5 * elapsedTime * elapsedTime),
   );
   const newVelocity = clampMagnitude(
     add(player.velocity, multiply(acceleration, elapsedTime)),
@@ -41,6 +39,8 @@ export function handlePlayerCollisions(
   player: Player,
   room: Room,
   handledCollisions: Set<string>,
+  elapsedTime: number,
+  onPlayerDamage: (damage: Damage) => void,
 ) {
   for (const otherPlayer of Object.values(room.players)) {
     if (player.id === otherPlayer.id) {
@@ -52,6 +52,31 @@ export function handlePlayerCollisions(
     handledCollisions.add(`${player.id}__${otherPlayer.id}`);
     handledCollisions.add(`${otherPlayer.id}__${player.id}`);
 
-    handleCirclesCollision(player, otherPlayer);
+    const [playerDamage, otherPlayerDamage] = handleCirclesCollision(
+      player,
+      otherPlayer,
+    );
+
+    if (playerDamage > 0) {
+      onPlayerDamage({
+        type: "playerCollision",
+        damagedPlayerId: player.id,
+        playerId: otherPlayer.id,
+        amount: playerDamage / elapsedTime,
+      });
+    }
+
+    if (otherPlayerDamage > 0) {
+      onPlayerDamage({
+        type: "playerCollision",
+        damagedPlayerId: otherPlayer.id,
+        playerId: player.id,
+        amount: otherPlayerDamage / elapsedTime,
+      });
+    }
   }
+}
+
+export function handlePlayerLimitsCollisions(player: Player, room: Room) {
+  handleCircleCollisionWithLimits(player, room.size.x, room.size.y);
 }

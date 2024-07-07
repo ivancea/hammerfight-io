@@ -8,10 +8,15 @@ type CircleCollider = {
   weight: number;
 };
 
+/**
+ * Handles the collision between two circles.
+ *
+ * @returns The amount of force applied in the collision, for each collider.
+ */
 export function handleCirclesCollision(
   collider1: CircleCollider,
   collider2: CircleCollider,
-) {
+): [number, number] {
   const separationVector = {
     x: collider2.position.x - collider1.position.x,
     y: collider2.position.y - collider1.position.y,
@@ -21,7 +26,7 @@ export function handleCirclesCollision(
   const minDistance = collider1.radius + collider2.radius;
 
   if (distance > minDistance) {
-    return;
+    return [0, 0];
   }
 
   const collider2PushVector = multiply(
@@ -46,4 +51,30 @@ export function handleCirclesCollision(
     collider2.velocity,
     multiply(collider2PushVector, ELASTICITY * collider1WeightRatio),
   );
+
+  const force = minDistance - distance;
+  return [force * collider2WeightRatio, force * collider1WeightRatio];
+}
+
+export function handleCircleCollisionWithLimits(
+  collider: CircleCollider,
+  width: number,
+  height: number,
+) {
+  const pushVector = { x: 0, y: 0 };
+
+  if (collider.position.x - collider.radius < 0) {
+    pushVector.x = collider.radius - collider.position.x;
+  } else if (collider.position.x + collider.radius > width) {
+    pushVector.x = width - collider.position.x - collider.radius;
+  }
+
+  if (collider.position.y - collider.radius < 0) {
+    pushVector.y = collider.radius - collider.position.y;
+  } else if (collider.position.y + collider.radius > height) {
+    pushVector.y = height - collider.position.y - collider.radius;
+  }
+
+  collider.position = add(collider.position, pushVector);
+  collider.velocity = add(collider.velocity, multiply(pushVector, ELASTICITY));
 }

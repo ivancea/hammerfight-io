@@ -26,6 +26,9 @@ export type SocketIoServerSentEvents = {
   playerUpdated: EventWith<{
     player: Player;
   }>;
+  playerDied: EventWith<{
+    player: Player;
+  }>;
   roomUpdated: EventWith<{
     room: Room;
   }>;

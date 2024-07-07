@@ -1,15 +1,20 @@
-import { handlePlayerCollisions, movePlayer } from "./physics.player";
-import { handleWeaponCollisions, moveWeapon } from "./physics.weapon";
+import { Damage } from "./damage";
+import {
+  handlePlayerCollisions,
+  handlePlayerLimitsCollisions,
+  movePlayer,
+} from "./physics.player";
+import {
+  handleWeaponCollisions,
+  handleWeaponLimitsCollisions,
+  moveWeapon,
+} from "./physics.weapon";
 import { Room } from "./types/room";
 
 export function applyPhysics(
   room: Room,
   elapsedTime: number,
-  /*onPlayerDamage: (
-    damagedPlayer: Player,
-    damagingPlayer: Player,
-    damage: number,
-  ) => void,*/
+  onPlayerDamage: (damage: Damage) => void,
 ) {
   // Apply physics
   for (const player of Object.values(room.players)) {
@@ -17,27 +22,25 @@ export function applyPhysics(
     moveWeapon(player, room, elapsedTime);
   }
 
-  // Handle collisions
-
-  /**
-   * Already handled player collisions.
-   *
-   * Each entry is a string with the format `${playerId1}__${playerId2}`.
-   * For each collision, 2 entries are added, 1-2 and 2-1.
-   */
+  // Handle player and weapon collisions
   const handledPlayerCollisions = new Set<string>();
 
   for (const player of Object.values(room.players)) {
-    handlePlayerCollisions(player, room, handledPlayerCollisions);
-    handleWeaponCollisions(player, room);
+    handlePlayerCollisions(
+      player,
+      room,
+      handledPlayerCollisions,
+      elapsedTime,
+      onPlayerDamage,
+    );
+    handleWeaponCollisions(player, room, elapsedTime, onPlayerDamage);
   }
 
-  // TODO: At the end, apply friction with  mul(velocity, Math.pow(FRICTION_CONSTANT, elapsedTime))
+  // Handle limits collisions
+  for (const player of Object.values(room.players)) {
+    handlePlayerLimitsCollisions(player, room);
+    handleWeaponLimitsCollisions(player, room);
+  }
 
-  // TODO: Handle collisions:
-  // - Player vs player
-  // - Player vs weapon
-  // - Player vs limits (Remove the clamp from the position calculation)
-
-  // TODO: Report the damages with a callback or return
+  // TODO: Apply friction with  mul(velocity, Math.pow(FRICTION_CONSTANT, elapsedTime))
 }

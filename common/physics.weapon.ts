@@ -1,5 +1,7 @@
+import { Damage } from "./damage";
 import {
   handleFlailWeaponCollisions,
+  handleFlailWeaponLimitsCollisions,
   moveFlailWeapon,
 } from "./physics.weapon.flail";
 import { Player } from "./types/player";
@@ -13,10 +15,29 @@ export function moveWeapon(player: Player, room: Room, elapsedTime: number) {
   }
 }
 
-export function handleWeaponCollisions(player: Player, room: Room) {
+export function handleWeaponCollisions(
+  player: Player,
+  room: Room,
+  elapsedTime: number,
+  onPlayerDamage: (damage: Damage) => void,
+) {
   switch (player.weapon.type) {
     case "flail":
-      handleFlailWeaponCollisions(player.weapon, player, room);
+      handleFlailWeaponCollisions(
+        player.weapon,
+        player,
+        room,
+        elapsedTime,
+        onPlayerDamage,
+      );
+      break;
+  }
+}
+
+export function handleWeaponLimitsCollisions(player: Player, room: Room) {
+  switch (player.weapon.type) {
+    case "flail":
+      handleFlailWeaponLimitsCollisions(player.weapon, player, room);
       break;
   }
 }

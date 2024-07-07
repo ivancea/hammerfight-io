@@ -1,6 +1,7 @@
 import Two from "two.js";
 import { Group } from "two.js/src/group";
 import { Line } from "two.js/src/shapes/line";
+import { Rectangle } from "two.js/src/shapes/rectangle";
 import { Text } from "two.js/src/text";
 import { assert } from "../common/errors";
 import { Player } from "../common/types/player";
@@ -144,14 +145,26 @@ function internalUpdatePlayer(player: Player) {
   const playerName = playerGroup?.getById(playerNameId(player)) as
     | Text
     | undefined;
+  const playerHealthHealth = playerGroup?.getById(
+    playerHealthHealthId(player),
+  ) as Rectangle | undefined;
 
-  if (!playerGroup || !playerName) {
+  if (!playerGroup || !playerName || !playerHealthHealth) {
     internalAddPlayer(player);
     return;
   }
 
   playerGroup.position.set(player.position.x, player.position.y);
   playerName.value = player.username;
+
+  const healthPercentage = player.health / player.maxHealth;
+  const totalHealthPixels = player.radius * 2 - 2;
+  const healthPixels = Math.ceil(totalHealthPixels * healthPercentage);
+  playerHealthHealth.position.set(
+    -(totalHealthPixels - healthPixels) / 2,
+    -player.radius - 5,
+  );
+  playerHealthHealth.width = healthPixels;
 
   switch (player.weapon.type) {
     case "flail": {
@@ -190,7 +203,7 @@ function internalAddPlayer(player: Player) {
   const totalHealthPixels = player.radius * 2 - 2;
   const healthPixels = Math.ceil(totalHealthPixels * healthPercentage);
   const playerHealthHealth = two.makeRectangle(
-    (totalHealthPixels - healthPixels) / 2,
+    -(totalHealthPixels - healthPixels) / 2,
     -player.radius - 5,
     healthPixels,
     4,
