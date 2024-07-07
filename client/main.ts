@@ -9,7 +9,11 @@ function main() {
 
       const username = (document.getElementById("username") as HTMLInputElement)
         .value;
-      joinRoom(username);
+      const debugMode = (
+        document.getElementById("debug-mode") as HTMLInputElement
+      ).checked;
+
+      joinRoom(username, debugMode);
     });
 }
 

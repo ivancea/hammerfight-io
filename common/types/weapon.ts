@@ -24,7 +24,7 @@ export function makeFlailWeapon(position: Vector): FlailWeapon {
     type: "flail",
     weight: 10,
     radius: 4,
-    chainLength: 30,
+    chainLength: 50,
     position,
     velocity: { x: 0, y: 0 },
     maxSpeed: 1000,

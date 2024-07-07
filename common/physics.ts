@@ -1,7 +1,14 @@
 import { Player } from "./types/player";
 import { Room } from "./types/room";
 import { FlailWeapon } from "./types/weapon";
-import { add, clamp, clampMagnitude, multiply } from "./vector";
+import {
+  add,
+  clamp,
+  clampMagnitude,
+  magnitude,
+  multiply,
+  subtract,
+} from "./vector";
 
 export function applyPhysics(room: Room, elapsedTime: number) {
   for (const player of Object.values(room.players)) {
@@ -27,13 +34,13 @@ function movePlayer(player: Player, room: Room, elapsedTime: number) {
   const acceleration = {
     x:
       player.acceleration.x *
-      Math.log10(
-        Math.max(10, Math.abs(player.acceleration.x - player.velocity.x) / 2),
+      Math.log2(
+        Math.max(2, Math.abs(player.acceleration.x - player.velocity.x) / 2),
       ),
     y:
       player.acceleration.y *
-      Math.log10(
-        Math.max(10, Math.abs(player.acceleration.y - player.velocity.y) / 2),
+      Math.log2(
+        Math.max(2, Math.abs(player.acceleration.y - player.velocity.y) / 2),
       ),
   };
 
@@ -81,8 +88,25 @@ function moveFlailWeapon(
     weapon.maxSpeed,
   );
 
-  // TODO: Collide with chain length
-
   weapon.position = newPosition;
   weapon.velocity = newVelocity;
+
+  // Chain length constraint
+  const chainVector = subtract(player.position, weapon.position);
+  const currentChainLength = magnitude(chainVector);
+
+  if (currentChainLength > weapon.chainLength) {
+    const positionDelta = clampMagnitude(
+      chainVector,
+      currentChainLength - weapon.chainLength,
+    );
+
+    weapon.position = add(weapon.position, positionDelta);
+    weapon.velocity = add(
+      weapon.velocity,
+      // Bounce on chain length
+      // The higher the elasticity coefficient, the fastest the weapon will swing
+      multiply(positionDelta, 100),
+    );
+  }
 }

@@ -1,9 +1,8 @@
 import { type Socket } from "socket.io-client";
-import { assert } from "../common/errors";
 import { Player } from "../common/types/player";
 import { Room } from "../common/types/room";
 import { subtract, Vector } from "../common/vector";
-import { Context } from "./context";
+import { destroyContext, getContext, setContext } from "./context";
 import {
   destroyGraphics,
   getScreenPlayerPosition,
@@ -14,19 +13,24 @@ import {
   updateRoom,
 } from "./graphics";
 
-let context: Context | undefined;
 let lastMousePosition: Vector | undefined;
 
-export function initializeGame(socket: Socket, room: Room, player: Player) {
-  assert(!context, "Context should not be defined");
-
-  context = {
+export function initializeGame(
+  socket: Socket,
+  room: Room,
+  player: Player,
+  debugMode: boolean,
+) {
+  const context = {
     socket,
     room,
     playerId: player.id,
+    debugMode,
   };
 
-  initializeGraphics(context, {
+  setContext(context);
+
+  initializeGraphics({
     onMouseMove(mousePosition) {
       updateAcceleration(mousePosition);
 
@@ -50,48 +54,39 @@ export function initializeGame(socket: Socket, room: Room, player: Player) {
 
 export function stopGame() {
   destroyGraphics();
-
-  context = undefined;
+  destroyContext();
 }
 
 export function playerJoined(player: Player) {
-  assert(context, "Context should be defined");
   console.log(`Player ${player.id} joined the room`);
 
-  context.room.players[player.id] = player;
+  getContext().room.players[player.id] = player;
 
-  updatePlayer(context, player);
+  updatePlayer(player);
 }
 
 export function playerLeft(player: Player) {
-  assert(context, "Context should be defined");
   console.log(`Player ${player.id} left the room`);
 
-  delete context.room.players[player.id];
+  delete getContext().room.players[player.id];
 
-  removePlayer(context, player);
+  removePlayer(player);
 }
 
 export function playerUpdated(player: Player) {
-  assert(context, "Context should be defined");
-
-  updatePlayer(context, player);
+  updatePlayer(player);
 }
 
 export function roomUpdated(room: Room) {
-  assert(context, "Context should be defined");
+  const oldRoom = getContext().room;
+  getContext().room = room;
 
-  const oldRoom = context.room;
-  context.room = room;
-
-  updateRoom(context, oldRoom);
+  updateRoom(oldRoom);
 }
 
 export function updateAcceleration(mousePosition: Vector) {
-  assert(context, "Context should be defined");
-
   const screenSize = getScreenSize();
-  const playerPosition = getScreenPlayerPosition(context);
+  const playerPosition = getScreenPlayerPosition();
 
   const delta = subtract(mousePosition, playerPosition);
 
@@ -103,12 +98,14 @@ export function updateAcceleration(mousePosition: Vector) {
 
   console.log("Delta: " + delta, xAcc, yAcc);
 
+  const maxPlayerAcceleration = getContext().room.maxPlayerAcceleration;
+
   const acceleration = {
-    x: xAcc * context.room.maxPlayerAcceleration,
-    y: yAcc * context.room.maxPlayerAcceleration,
+    x: xAcc * maxPlayerAcceleration,
+    y: yAcc * maxPlayerAcceleration,
   };
 
   console.log("Sending acceleration", acceleration);
 
-  context.socket.emit("updateAcceleration", { acceleration });
+  getContext().socket.emit("updateAcceleration", { acceleration });
 }

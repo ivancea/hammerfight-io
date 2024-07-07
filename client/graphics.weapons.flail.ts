@@ -3,6 +3,7 @@ import { Line } from "two.js/src/shapes/line";
 import { assert } from "../common/errors";
 import { Player } from "../common/types/player";
 import { FlailWeapon } from "../common/types/weapon";
+import { isDebugMode } from "./context";
 
 export function addFlailWeapon(two: Two, weapon: FlailWeapon, player: Player) {
   const flailHead = two.makeCircle(
@@ -22,6 +23,18 @@ export function addFlailWeapon(two: Two, weapon: FlailWeapon, player: Player) {
   flailChain.id = flailChainId(player);
   flailChain.linewidth = 2;
   flailChain.stroke = "#AA0000";
+
+  if (isDebugMode()) {
+    const flailVelocity = two.makeLine(
+      weapon.position.x,
+      weapon.position.y,
+      weapon.position.x + weapon.velocity.x,
+      weapon.position.y + weapon.velocity.y,
+    );
+    flailVelocity.id = flailVelocityId(player);
+    flailVelocity.linewidth = 1;
+    flailVelocity.stroke = "#0000FF";
+  }
 }
 
 export function updateFlailWeapon(
@@ -39,6 +52,16 @@ export function updateFlailWeapon(
   flailHead.position.set(weapon.position.x, weapon.position.y);
   flailChain.vertices[0].set(weapon.position.x, weapon.position.y);
   flailChain.vertices[1].set(player.position.x, player.position.y);
+
+  if (isDebugMode()) {
+    const flailVelocity = two.scene.getById(flailVelocityId(player)) as Line;
+    assert(flailVelocity, "Flail velocity not found");
+    flailVelocity.vertices[0].set(weapon.position.x, weapon.position.y);
+    flailVelocity.vertices[1].set(
+      weapon.position.x + weapon.velocity.x,
+      weapon.position.y + weapon.velocity.y,
+    );
+  }
 }
 
 export function removeFlailWeapon(
@@ -53,6 +76,12 @@ export function removeFlailWeapon(
 
   two.remove(flailHead);
   two.remove(flailChain);
+
+  if (isDebugMode()) {
+    const flailVelocity = two.scene.getById(flailVelocityId(player));
+    assert(flailVelocity, "Flail velocity not found");
+    two.remove(flailVelocity);
+  }
 }
 
 function flailHeadId(player: Player) {
@@ -61,4 +90,8 @@ function flailHeadId(player: Player) {
 
 function flailChainId(player: Player) {
   return `weapon_flail__chain__${player.id}`;
+}
+
+function flailVelocityId(player: Player) {
+  return `weapon_flail__velocity__${player.id}`;
 }

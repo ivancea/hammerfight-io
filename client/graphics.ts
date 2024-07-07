@@ -1,12 +1,13 @@
 import Two from "two.js";
 import { Group } from "two.js/src/group";
+import { Line } from "two.js/src/shapes/line";
 import { Text } from "two.js/src/text";
 import { assert } from "../common/errors";
 import { Player } from "../common/types/player";
 import { Room } from "../common/types/room";
 import { Vector } from "../common/vector";
 import backgroundImage from "./assets/background.jpg";
-import { Context } from "./context";
+import { getContext, isDebugMode } from "./context";
 import {
   addFlailWeapon,
   removeFlailWeapon,
@@ -19,10 +20,8 @@ type EventHandlers = {
 
 let two: Two | undefined;
 
-export function initializeGraphics(
-  context: Context,
-  eventHandlers: EventHandlers,
-) {
+export function initializeGraphics(eventHandlers: EventHandlers) {
+  const context = getContext();
   const element = document.getElementById("game");
   assert(element, "Could not find game element");
 
@@ -54,7 +53,7 @@ export function initializeGraphics(
     internalAddPlayer(player);
   }
 
-  centerPlayer(context);
+  centerPlayer();
 
   getDomElement().addEventListener("mousemove", (event) => {
     assert(two, "Game not initialized");
@@ -80,8 +79,9 @@ export function destroyGraphics() {
   two = undefined;
 }
 
-export function updateRoom(context: Context, oldRoom: Room) {
+export function updateRoom(oldRoom: Room) {
   assert(two, "Game not initialized");
+  const context = getContext();
 
   // Remove removed players
   for (const oldPlayer of Object.values(oldRoom.players)) {
@@ -95,29 +95,30 @@ export function updateRoom(context: Context, oldRoom: Room) {
     internalUpdatePlayer(player);
   }
 
-  centerPlayer(context);
+  centerPlayer();
 }
 
-export function updatePlayer(context: Context, player: Player) {
+export function updatePlayer(player: Player) {
   internalUpdatePlayer(player);
 
-  centerPlayer(context);
+  centerPlayer();
 }
 
-export function addPlayer(context: Context, player: Player) {
+export function addPlayer(player: Player) {
   internalAddPlayer(player);
 
-  centerPlayer(context);
+  centerPlayer();
 }
 
-export function removePlayer(context: Context, player: Player) {
+export function removePlayer(player: Player) {
   internalRemovePlayer(player);
 
-  centerPlayer(context);
+  centerPlayer();
 }
 
-export function getScreenPlayerPosition(context: Context) {
+export function getScreenPlayerPosition() {
   assert(two, "Game not initialized");
+  const context = getContext();
 
   const player = context.room.players[context.playerId];
   assert(player, "Player not found");
@@ -158,6 +159,11 @@ function internalUpdatePlayer(player: Player) {
       break;
     }
   }
+
+  if (isDebugMode()) {
+    const playerVelocity = two.scene.getById(playerVelocityId(player)) as Line;
+    playerVelocity.vertices[1].set(player.velocity.x, player.velocity.y);
+  }
 }
 
 function internalAddPlayer(player: Player) {
@@ -180,6 +186,20 @@ function internalAddPlayer(player: Player) {
       break;
     }
   }
+
+  if (isDebugMode()) {
+    const playerVelocity = two.makeLine(
+      0,
+      0,
+      player.velocity.x,
+      player.velocity.y,
+    );
+    playerVelocity.id = playerVelocityId(player);
+    playerVelocity.linewidth = 1;
+    playerVelocity.stroke = "#0000FF";
+
+    playerGroup.add(playerVelocity);
+  }
 }
 
 function internalRemovePlayer(player: Player) {
@@ -197,16 +217,24 @@ function internalRemovePlayer(player: Player) {
       break;
     }
   }
+
+  if (isDebugMode()) {
+    const playerVelocity = two.scene.getById(playerVelocityId(player));
+    assert(playerVelocity, "Player velocity not found");
+
+    playerVelocity.remove();
+  }
 }
 
-function centerPlayer(context: Context) {
+function centerPlayer() {
   assert(two, "Game not initialized");
+  const context = getContext();
 
   const player = context.room.players[context.playerId];
   assert(player, "Player not found");
 
   const rect = getDomElement().getBoundingClientRect();
-  const minRadius = Math.min(rect.width, rect.height) * 0.1;
+  const minRadius = Math.min(rect.width, rect.height) * 0.2;
 
   const currentTranslation = two.scene.translation;
   const targetTranslation = new Two.Vector(
@@ -239,9 +267,13 @@ function playerGroupId(player: Player) {
 }
 
 function playerBodyId(player: Player) {
-  return `player_body__${player.id}`;
+  return `player__body__${player.id}`;
 }
 
 function playerNameId(player: Player) {
-  return `player_name__${player.id}`;
+  return `player__name__${player.id}`;
+}
+
+function playerVelocityId(player: Player) {
+  return `player__velocity__${player.id}`;
 }

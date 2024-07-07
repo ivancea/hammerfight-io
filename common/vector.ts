@@ -31,10 +31,20 @@ export function divide(v: Vector, scalar: number) {
   };
 }
 
+export function magnitude(v: Vector) {
+  return Math.sqrt(v.x * v.x + v.y * v.y);
+}
+
 export function clampMagnitude(vector: Vector, maxMagnitude: number) {
+  const vectorMagnitude = magnitude(vector);
+
+  if (vectorMagnitude <= maxMagnitude) {
+    return vector;
+  }
+
   return {
-    x: Math.min(Math.abs(vector.x), maxMagnitude) * Math.sign(vector.x),
-    y: Math.min(Math.abs(vector.y), maxMagnitude) * Math.sign(vector.y),
+    x: (vector.x / vectorMagnitude) * maxMagnitude,
+    y: (vector.y / vectorMagnitude) * maxMagnitude,
   };
 }
 
