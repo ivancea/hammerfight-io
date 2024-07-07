@@ -90,7 +90,7 @@ export function updateAcceleration(mousePosition: Vector) {
 
   const delta = subtract(mousePosition, playerPosition);
 
-  const baseSize = Math.min(screenSize.x, screenSize.y) * 0.4;
+  const baseSize = Math.min(screenSize.x, screenSize.y) * 0.2;
 
   // [-1, 1] range
   const xAcc = Math.max(-1, Math.min(1, delta.x / baseSize));

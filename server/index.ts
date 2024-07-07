@@ -26,7 +26,7 @@ server.io.on("connection", (socket) => {
     const { room, player } = joinPlayer(socket, event.username);
 
     console.log(
-      `User ${socket} with name "${event.username}" joined room ${room.id}`,
+      `User ${socket.id} with name "${event.username}" joined room ${room.id}`,
     );
 
     callback(room, player);

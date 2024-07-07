@@ -28,6 +28,16 @@ export function initializeGraphics(eventHandlers: EventHandlers) {
 
   two = new Two().appendTo(element);
 
+  function resizeElement() {
+    assert(two, "Game not initialized");
+
+    const rect = getDomElement().getBoundingClientRect();
+    two.renderer.setSize(rect.width, rect.height);
+  }
+
+  new ResizeObserver(resizeElement).observe(getDomElement());
+  resizeElement();
+
   const backgroundRect = two.makeRectangle(
     context.room.size.x / 2,
     context.room.size.y / 2,
