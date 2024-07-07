@@ -96,16 +96,12 @@ export function updateAcceleration(mousePosition: Vector) {
   const xAcc = Math.max(-1, Math.min(1, delta.x / baseSize));
   const yAcc = Math.max(-1, Math.min(1, delta.y / baseSize));
 
-  console.log("Delta: " + delta, xAcc, yAcc);
-
   const maxPlayerAcceleration = getContext().room.maxPlayerAcceleration;
 
   const acceleration = {
     x: xAcc * maxPlayerAcceleration,
     y: yAcc * maxPlayerAcceleration,
   };
-
-  console.log("Sending acceleration", acceleration);
 
   getContext().socket.emit("updateAcceleration", { acceleration });
 }
