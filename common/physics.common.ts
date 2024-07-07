@@ -1,5 +1,5 @@
 import { ELASTICITY, FRICTION_CONSTANT } from "./physics.constants";
-import { add, clampMagnitude, magnitude, multiply, Vector } from "./vector";
+import { add, magnitude, multiply, Vector, withMagnitude } from "./vector";
 
 type EntityWithPosition = {
   position: Vector;
@@ -37,7 +37,7 @@ export function handleCirclesCollision(
   }
 
   const collider2PushVector = multiply(
-    clampMagnitude(separationVector, minDistance - distance),
+    withMagnitude(separationVector, minDistance - distance),
     2,
   );
   const collider1PushVector = multiply(collider2PushVector, -1);

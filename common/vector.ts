@@ -35,6 +35,19 @@ export function magnitude(v: Vector) {
   return Math.sqrt(v.x * v.x + v.y * v.y);
 }
 
+export function withMagnitude(vector: Vector, newMagnitude: number) {
+  const vectorMagnitude = magnitude(vector);
+
+  if (vectorMagnitude === 0) {
+    return { x: newMagnitude, y: 0 };
+  }
+
+  return {
+    x: (vector.x / vectorMagnitude) * newMagnitude,
+    y: (vector.y / vectorMagnitude) * newMagnitude,
+  };
+}
+
 export function clampMagnitude(vector: Vector, maxMagnitude: number) {
   const vectorMagnitude = magnitude(vector);
 
