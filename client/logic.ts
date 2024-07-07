@@ -2,7 +2,13 @@ import { type Socket } from "socket.io-client";
 import { Player } from "../common/types/player";
 import { Room } from "../common/types/room";
 import { subtract, Vector } from "../common/vector";
-import { destroyContext, getContext, setContext } from "./context";
+import {
+  destroyContext,
+  getContext,
+  isContextSet,
+  isPlayerAlive,
+  setContext,
+} from "./context";
 import {
   destroyGraphics,
   getScreenPlayerPosition,
@@ -38,10 +44,8 @@ export function initializeGame(
     },
   });
 
-  const currentContext = context;
-
   const interval = setInterval(() => {
-    if (context !== currentContext) {
+    if (!isContextSet() || context !== getContext()) {
       clearInterval(interval);
       return;
     }
@@ -49,7 +53,7 @@ export function initializeGame(
     if (lastMousePosition) {
       updateAcceleration(lastMousePosition);
     }
-  });
+  }, 10);
 }
 
 export function stopGame() {
@@ -85,6 +89,10 @@ export function roomUpdated(room: Room) {
 }
 
 export function updateAcceleration(mousePosition: Vector) {
+  if (!isPlayerAlive()) {
+    return;
+  }
+
   const screenSize = getScreenSize();
   const playerPosition = getScreenPlayerPosition();
 

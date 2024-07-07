@@ -20,6 +20,10 @@ export function getContext() {
   return context;
 }
 
+export function isContextSet() {
+  return !!context;
+}
+
 export function setContext(newContext: Context) {
   assert(!context, "Context should not be defined");
   context = newContext;
@@ -27,6 +31,11 @@ export function setContext(newContext: Context) {
 
 export function destroyContext() {
   context = undefined;
+}
+
+export function isPlayerAlive() {
+  const player = getContext().room.players[getContext().playerId];
+  return player && player.health > 0;
 }
 
 export function isDebugMode(): boolean {

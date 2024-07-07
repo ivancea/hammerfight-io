@@ -8,7 +8,7 @@ import { Player } from "../common/types/player";
 import { Room } from "../common/types/room";
 import { Vector } from "../common/vector";
 import backgroundImage from "./assets/background.jpg";
-import { getContext, isDebugMode } from "./context";
+import { getContext, isDebugMode, isPlayerAlive } from "./context";
 import {
   addFlailWeapon,
   removeFlailWeapon,
@@ -20,6 +20,7 @@ type EventHandlers = {
 };
 
 let two: Two | undefined;
+let resizeObserver: ResizeObserver | undefined;
 
 export function initializeGraphics(eventHandlers: EventHandlers) {
   const context = getContext();
@@ -35,7 +36,8 @@ export function initializeGraphics(eventHandlers: EventHandlers) {
     two.renderer.setSize(rect.width, rect.height);
   }
 
-  new ResizeObserver(resizeElement).observe(getDomElement());
+  resizeObserver = new ResizeObserver(resizeElement);
+  resizeObserver.observe(element);
   resizeElement();
 
   const backgroundRect = two.makeRectangle(
@@ -45,16 +47,18 @@ export function initializeGraphics(eventHandlers: EventHandlers) {
     context.room.size.y,
   );
   const backgroundTexture = two.makeTexture(backgroundImage, () => {
-    const image = backgroundTexture.image as HTMLImageElement;
-    const imageWidth = image.naturalWidth;
-    const imageHeight = image.naturalHeight;
+    setTimeout(() => {
+      const image = backgroundTexture.image as HTMLImageElement;
+      const imageWidth = image.naturalWidth;
+      const imageHeight = image.naturalHeight;
 
-    backgroundRect.width = imageWidth;
-    backgroundRect.height = imageHeight;
-    backgroundRect.scale = new Two.Vector(
-      context.room.size.x / imageWidth,
-      context.room.size.y / imageHeight,
-    );
+      backgroundRect.width = imageWidth;
+      backgroundRect.height = imageHeight;
+      backgroundRect.scale = new Two.Vector(
+        context.room.size.x / imageWidth,
+        context.room.size.y / imageHeight,
+      );
+    });
   });
 
   backgroundRect.id = "background";
@@ -80,7 +84,11 @@ export function initializeGraphics(eventHandlers: EventHandlers) {
 }
 
 export function destroyGraphics() {
-  assert(two, "Game not initialized");
+  resizeObserver?.disconnect();
+
+  if (!two) {
+    return;
+  }
 
   two.pause();
 
@@ -124,7 +132,9 @@ export function addPlayer(player: Player) {
 export function removePlayer(player: Player) {
   internalRemovePlayer(player);
 
-  centerPlayer();
+  if (player.id !== getContext().playerId) {
+    centerPlayer();
+  }
 }
 
 export function getScreenPlayerPosition() {
@@ -278,6 +288,10 @@ function internalRemovePlayer(player: Player) {
 }
 
 function centerPlayer() {
+  if (!isPlayerAlive()) {
+    return;
+  }
+
   assert(two, "Game not initialized");
   const context = getContext();
 

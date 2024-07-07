@@ -4,10 +4,10 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "start": "npm run build && npm run serve",
+    "start": "npm run build-dev && npm run serve",
     "serve": "tsx server/index.ts",
-    "build": "npm run build-webpack",
-    "build-webpack": "webpack",
+    "build": "webpack --mode production",
+    "build-dev": "webpack --mode development",
     "format": "prettier --write .",
     "lint": "eslint .",
     "lint-fix": "eslint . --fix",
@@ -36,7 +36,6 @@
   "dependencies": {
     "@eslint/compat": "^1.1.0",
     "compression": "^1.7.4",
-    "cross-env": "^7.0.3",
     "express": "^4.19.2",
     "mini-css-extract-plugin": "^2.9.0",
     "prettier": "^3.3.2",
