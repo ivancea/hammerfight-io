@@ -6,6 +6,7 @@ import type {
 } from "../common/types/socket-io";
 import {
   initializeGame,
+  playerDied,
   playerJoined,
   playerLeft,
   playerUpdated,
@@ -36,6 +37,12 @@ export function joinRoom(username: string, debugMode: boolean) {
     console.log(`Player ${player.id} left the room`);
 
     playerLeft(player);
+  });
+
+  socket.on("playerDied", ({ player }) => {
+    console.log(`Player ${player.id} died`);
+
+    playerDied(player);
   });
 
   socket.on("playerUpdated", ({ player }) => {

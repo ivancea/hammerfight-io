@@ -58,19 +58,19 @@ export function stopGame() {
 }
 
 export function playerJoined(player: Player) {
-  console.log(`Player ${player.id} joined the room`);
-
   getContext().room.players[player.id] = player;
 
   updatePlayer(player);
 }
 
 export function playerLeft(player: Player) {
-  console.log(`Player ${player.id} left the room`);
-
   delete getContext().room.players[player.id];
 
   removePlayer(player);
+}
+
+export function playerDied(player: Player) {
+  playerLeft(player);
 }
 
 export function playerUpdated(player: Player) {

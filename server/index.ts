@@ -6,7 +6,7 @@ import { disconnectPlayer, getPlayer, getRoom, joinPlayer } from "./world";
 server.initialize(80);
 
 server.io.on("connection", (socket) => {
-  console.log("User connected");
+  console.log(`User ${socket.id} connected`);
 
   socket.on("disconnect", (reason) => {
     console.log(`User disconnected. Reason: ${reason}`);
@@ -26,7 +26,7 @@ server.io.on("connection", (socket) => {
     const { room, player } = joinPlayer(socket, event.username);
 
     console.log(
-      `User "${event.username}" joined room ${room.id} as player ${player.id}`,
+      `User ${socket} with name "${event.username}" joined room ${room.id}`,
     );
 
     callback(room, player);
