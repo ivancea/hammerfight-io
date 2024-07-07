@@ -39,6 +39,8 @@ export const server = {
 
     io = new SocketIoServer(server);
 
+    // TODO: Limit requests per second and disconnect players that exceed it
+
     const __dirname = dirname(fileURLToPath(import.meta.url));
     const clientDir = join(__dirname, "client");
 

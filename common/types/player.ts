@@ -1,4 +1,5 @@
 import { Vector } from "../vector";
+import { Weapon } from "./weapon";
 
 /**
  * Represents a player data in a room.
@@ -16,6 +17,7 @@ export type Player = {
 
   username: string;
 
+  maxHealth: number;
   health: number;
 
   /**
@@ -55,7 +57,30 @@ export type Player = {
   acceleration: Vector;
 
   /**
-   * The weapon type and position. To be done.
+   * The weapon the player is holding, with all its data for simulation.
    */
-  weapon: undefined;
+  weapon: Weapon;
 };
+
+export function makePlayer(
+  playerId: string,
+  roomId: number,
+  username: string,
+  position: Vector,
+  weapon: Weapon,
+): Player {
+  return {
+    id: playerId,
+    roomId,
+    joinTimestamp: Date.now(),
+    username,
+    maxHealth: 100,
+    health: 100,
+    radius: 10,
+    weight: 50,
+    position,
+    velocity: { x: 0, y: 0 },
+    acceleration: { x: 0, y: 0 },
+    weapon,
+  };
+}

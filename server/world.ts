@@ -1,19 +1,10 @@
 import { assert } from "../common/errors";
-import { Player } from "../common/types/player";
-import { Room } from "../common/types/room";
+import { makePlayer, Player } from "../common/types/player";
+import { makeRoom, Room } from "../common/types/room";
+import { makeFlailWeapon } from "../common/types/weapon";
 import { divide } from "../common/vector";
 import { updateRoom } from "./logic";
 import { server, Socket } from "./socket-io";
-
-const ROOM_SIZE = { x: 2_000, y: 2_000 };
-const ROOM_GRAVITY = { x: 0, y: -10 };
-const MAX_PLAYER_ACCELERATION = 500;
-const MAX_PLAYER_SPEED = 500;
-
-const MAX_PLAYERS_PER_ROOM = 3;
-const MAX_PLAYER_HEALTH = 100;
-const PLAYER_RADIUS = 10;
-const PLAYER_WEIGHT = 50;
 
 export type World = {
   /**
@@ -45,20 +36,14 @@ export function joinPlayer(socket: Socket, username: string) {
 
   server.addToRoom(socket, room);
 
-  const player: Player = {
-    id: socket.id,
-    roomId: room.id,
-    joinTimestamp: Date.now(),
+  const playerPosition = divide(room.size, 2); // TODO: Find an empty position
+  const player = makePlayer(
+    socket.id,
+    room.id,
     username,
-    health: MAX_PLAYER_HEALTH,
-    radius: PLAYER_RADIUS,
-    weight: PLAYER_WEIGHT,
-    position: divide(room.size, 2), // TODO: Find an empty position
-    velocity: { x: 0, y: 0 },
-    acceleration: { x: 0, y: 0 },
-
-    weapon: undefined,
-  };
+    playerPosition,
+    makeFlailWeapon(playerPosition),
+  );
 
   socketsById[socket.id] = socket;
   playersById[socket.id] = player;
@@ -84,7 +69,7 @@ export function disconnectPlayer(player: Player) {
  */
 function findOrCreateRoomWithSpace(): Room {
   for (const room of Object.values(world.rooms)) {
-    if (Object.keys(room.players).length < MAX_PLAYERS_PER_ROOM) {
+    if (Object.keys(room.players).length < room.maxPlayers) {
       return room;
     }
   }
@@ -100,30 +85,23 @@ function findOrCreateRoomWithSpace(): Room {
  * Creates a new room. Starts the room physics loop.
  */
 function createRoom(): Room {
-  const newRoom: Room = {
-    id: nextRoomId++,
-    players: {},
-    size: ROOM_SIZE,
-    gravity: ROOM_GRAVITY,
-    maxPlayerSpeed: MAX_PLAYER_SPEED,
-    maxPlayerAcceleration: MAX_PLAYER_ACCELERATION,
-  };
+  const room = makeRoom(nextRoomId++);
 
-  world.rooms[newRoom.id] = newRoom;
+  world.rooms[room.id] = room;
 
   let lastUpdateTime = Date.now() / 1000;
 
   const intervalId = setInterval(() => {
-    if (!world.rooms[newRoom.id]) {
+    if (!world.rooms[room.id]) {
       clearInterval(intervalId);
     } else {
       const newUpdateTime = Date.now() / 1000;
-      updateRoom(newRoom, newUpdateTime - lastUpdateTime);
+      updateRoom(room, newUpdateTime - lastUpdateTime);
       lastUpdateTime = newUpdateTime;
     }
   }, 10);
 
-  return newRoom;
+  return room;
 }
 
 export function getPlayer(socket: Socket) {

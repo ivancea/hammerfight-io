@@ -11,6 +11,11 @@ export type Room = {
   id: number;
 
   /**
+   * Maximum number of players allowed in the room.
+   */
+  maxPlayers: number;
+
+  /**
    * Players inside the room.
    *
    * The key is the Socket ID of the player.
@@ -52,3 +57,15 @@ export type Room = {
    */
   maxPlayerAcceleration: number;
 };
+
+export function makeRoom(roomId: number): Room {
+  return {
+    id: roomId,
+    maxPlayers: 3,
+    players: {},
+    size: { x: 2_000, y: 2_000 },
+    gravity: { x: 0, y: -200 },
+    maxPlayerSpeed: 500,
+    maxPlayerAcceleration: 500,
+  };
+}

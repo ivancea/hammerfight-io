@@ -7,6 +7,11 @@ import { Room } from "../common/types/room";
 import { Vector } from "../common/vector";
 import backgroundImage from "./assets/background.jpg";
 import { Context } from "./context";
+import {
+  addFlailWeapon,
+  removeFlailWeapon,
+  updateFlailWeapon,
+} from "./graphics.weapons.flail";
 
 type EventHandlers = {
   onMouseMove: (mousePosition: Vector) => void;
@@ -121,28 +126,6 @@ export function getScreenPlayerPosition(context: Context) {
     x: player.position.x + two.scene.translation.x,
     y: player.position.y + two.scene.translation.y,
   };
-
-  /*const rect = getDomElement().getBoundingClientRect();
-  const minRadius = Math.min(rect.width, rect.height) * 0.1;
-
-  const currentTranslation = two.scene.translation;
-  const targetTranslation = new Two.Vector(
-    two.width / 2 - player.position.x,
-    two.height / 2 - player.position.y,
-  );
-
-  const delta = targetTranslation.clone().sub(currentTranslation);
-
-  // If inside a minimum radius, don't move
-  if (delta.length() < minRadius) {
-    return;
-  }
-
-  const translationDelta = currentTranslation
-    .clone()
-    .add(delta.setLength(delta.length() - minRadius));
-
-  two.scene.translation = translationDelta;*/
 }
 
 export function getScreenSize() {
@@ -168,6 +151,13 @@ function internalUpdatePlayer(player: Player) {
 
   playerGroup.position.set(player.position.x, player.position.y);
   playerName.value = player.username;
+
+  switch (player.weapon.type) {
+    case "flail": {
+      updateFlailWeapon(two, player.weapon, player);
+      break;
+    }
+  }
 }
 
 function internalAddPlayer(player: Player) {
@@ -183,6 +173,13 @@ function internalAddPlayer(player: Player) {
   const playerGroup = two.makeGroup(playerBody, playerName);
   playerGroup.id = playerGroupId(player);
   playerGroup.position.set(player.position.x, player.position.y);
+
+  switch (player.weapon.type) {
+    case "flail": {
+      addFlailWeapon(two, player.weapon, player);
+      break;
+    }
+  }
 }
 
 function internalRemovePlayer(player: Player) {
@@ -193,6 +190,13 @@ function internalRemovePlayer(player: Player) {
   assert(playerGroup, "Player group not found");
 
   playerGroup.remove();
+
+  switch (player.weapon.type) {
+    case "flail": {
+      removeFlailWeapon(two, player.weapon, player);
+      break;
+    }
+  }
 }
 
 function centerPlayer(context: Context) {
