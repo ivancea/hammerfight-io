@@ -1,0 +1,6 @@
+services:
+  hammerfight-io:
+    image: hammerfight-io
+    build: .
+    ports:
+      - "80:80"

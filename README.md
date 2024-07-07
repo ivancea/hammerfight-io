@@ -2,7 +2,21 @@
 
 HammerFight-like browser game.
 
+## How to run
+
+The server will run on port 80. It's configured to also serve the frontend.
+
+### With Node 20
+
+Run with `npm start`
+
+### With Docker
+
+Run with `docker compose up`
+
 ## Client-Server logic
+
+> 💡 Some parts of this section may have not been implemented yet
 
 Logic and physics run both in the client and in the server, as to avoid having things stuck in the client if there's latency spikes.
 
