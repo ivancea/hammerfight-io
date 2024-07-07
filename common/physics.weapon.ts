@@ -1,5 +1,6 @@
 import { Damage } from "./damage";
 import {
+  applyFrictionToFlailWeapon,
   handleFlailWeaponCollisions,
   handleFlailWeaponLimitsCollisions,
   moveFlailWeapon,
@@ -38,6 +39,18 @@ export function handleWeaponLimitsCollisions(player: Player, room: Room) {
   switch (player.weapon.type) {
     case "flail":
       handleFlailWeaponLimitsCollisions(player.weapon, player, room);
+      break;
+  }
+}
+
+export function applyFrictionToWeapon(
+  player: Player,
+  room: Room,
+  elapsedTime: number,
+) {
+  switch (player.weapon.type) {
+    case "flail":
+      applyFrictionToFlailWeapon(player.weapon, player, room, elapsedTime);
       break;
   }
 }

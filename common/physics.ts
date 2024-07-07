@@ -1,10 +1,12 @@
 import { Damage } from "./damage";
 import {
+  applyFrictionToPlayer,
   handlePlayerCollisions,
   handlePlayerLimitsCollisions,
   movePlayer,
 } from "./physics.player";
 import {
+  applyFrictionToWeapon,
   handleWeaponCollisions,
   handleWeaponLimitsCollisions,
   moveWeapon,
@@ -42,5 +44,9 @@ export function applyPhysics(
     handleWeaponLimitsCollisions(player, room);
   }
 
-  // TODO: Apply friction with  mul(velocity, Math.pow(FRICTION_CONSTANT, elapsedTime))
+  // Apply friction
+  for (const player of Object.values(room.players)) {
+    applyFrictionToPlayer(player, room, elapsedTime);
+    applyFrictionToWeapon(player, room, elapsedTime);
+  }
 }

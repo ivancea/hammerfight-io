@@ -1,5 +1,6 @@
 import { Damage } from "./damage";
 import {
+  applyFriction,
   handleCircleCollisionWithLimits,
   handleCirclesCollision,
 } from "./physics.common";
@@ -87,4 +88,13 @@ export function handleFlailWeaponLimitsCollisions(
   room: Room,
 ) {
   handleCircleCollisionWithLimits(weapon, room.size.x, room.size.y);
+}
+
+export function applyFrictionToFlailWeapon(
+  weapon: FlailWeapon,
+  player: Player,
+  room: Room,
+  elapsedTime: number,
+) {
+  applyFriction(weapon, elapsedTime);
 }

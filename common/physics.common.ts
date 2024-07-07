@@ -1,12 +1,19 @@
-import { ELASTICITY } from "./physics.constants";
+import { ELASTICITY, FRICTION_CONSTANT } from "./physics.constants";
 import { add, clampMagnitude, magnitude, multiply, Vector } from "./vector";
 
-type CircleCollider = {
+type EntityWithPosition = {
   position: Vector;
-  velocity: Vector;
-  radius: number;
-  weight: number;
 };
+
+type EntityWithVelocity = {
+  velocity: Vector;
+};
+
+type CircleCollider = EntityWithPosition &
+  EntityWithVelocity & {
+    radius: number;
+    weight: number;
+  };
 
 /**
  * Handles the collision between two circles.
@@ -77,4 +84,11 @@ export function handleCircleCollisionWithLimits(
 
   collider.position = add(collider.position, pushVector);
   collider.velocity = add(collider.velocity, multiply(pushVector, ELASTICITY));
+}
+
+export function applyFriction(entity: EntityWithVelocity, elapsedTime: number) {
+  entity.velocity = multiply(
+    entity.velocity,
+    Math.pow(FRICTION_CONSTANT, elapsedTime),
+  );
 }
