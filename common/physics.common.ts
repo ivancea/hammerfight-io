@@ -50,6 +50,8 @@ export function handleCirclesCollision(
   const collider1WeightRatio = collider1.weight / totalWeight;
   const collider2WeightRatio = collider2.weight / totalWeight;
 
+  // TODO: Add elapsedTime to the equation, as the force should depend on it
+
   collider1.velocity = add(
     collider1.velocity,
     multiply(collider1PushVector, ELASTICITY * collider2WeightRatio),

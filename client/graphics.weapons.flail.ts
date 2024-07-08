@@ -4,15 +4,18 @@ import { assert } from "../common/errors";
 import { Player } from "../common/types/player";
 import { FlailWeapon } from "../common/types/weapon";
 import { isDebugMode } from "./context";
+import { FLAIL_IMAGE_SIZE, getTextures } from "./graphics.textures";
 
 export function addFlailWeapon(two: Two, weapon: FlailWeapon, player: Player) {
   const flailHead = two.makeCircle(
     weapon.position.x,
     weapon.position.y,
-    weapon.radius,
+    FLAIL_IMAGE_SIZE / 2,
   );
   flailHead.id = flailHeadId(player);
-  flailHead.fill = "#FF0000";
+  flailHead.scale = (weapon.radius * 2) / FLAIL_IMAGE_SIZE;
+  flailHead.noStroke();
+  flailHead.fill = getTextures(two).weapons.flail;
 
   const flailChain = two.makeLine(
     weapon.position.x,

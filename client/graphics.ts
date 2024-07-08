@@ -1,4 +1,5 @@
 import Two from "two.js";
+import { Texture } from "two.js/src/effects/texture";
 import { Group } from "two.js/src/group";
 import { Line } from "two.js/src/shapes/line";
 import { Rectangle } from "two.js/src/shapes/rectangle";
@@ -9,11 +10,13 @@ import { Room } from "../common/types/room";
 import { Vector } from "../common/vector";
 import backgroundImage from "./assets/background.jpg";
 import { getContext, isDebugMode, isPlayerAlive } from "./context";
+import { getTextures, SHIP_IMAGE_SIZE } from "./graphics.textures";
 import {
   addFlailWeapon,
   removeFlailWeapon,
   updateFlailWeapon,
 } from "./graphics.weapons.flail";
+import { hashCode } from "./utils";
 
 type EventHandlers = {
   onMouseMove: (mousePosition: Vector) => void;
@@ -202,12 +205,22 @@ function internalUpdatePlayer(player: Player) {
 function internalAddPlayer(player: Player) {
   assert(two, "Game not initialized");
 
-  const playerBody = two.makeCircle(0, 0, player.radius);
+  const playerBody = two.makeCircle(0, 0, SHIP_IMAGE_SIZE / 2);
   playerBody.id = playerBodyId(player);
-  playerBody.fill = "#FF8000";
+  playerBody.scale = (player.radius * 2) / SHIP_IMAGE_SIZE;
+  playerBody.noStroke();
+  const shipTextures = getTextures(two).ships;
+  playerBody.fill = shipTextures[
+    hashCode(player.id) % shipTextures.length
+  ] as Texture;
 
-  const playerName = two.makeText(player.username, 0, 0);
+  const playerName = two.makeText(
+    player.username,
+    0,
+    -player.radius - 2 - 7 - 8, // -Radius - margin - halfTextSize - healthBar
+  );
   playerName.id = playerNameId(player);
+  playerName.size = 14;
 
   const playerHealthBackground = two.makeRectangle(
     0,

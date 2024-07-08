@@ -24,7 +24,7 @@ export default {
         include: path.resolve(__dirname, "client/styles"),
       },
       {
-        test: /\.jpg$/,
+        test: /\.(jpg|png)$/,
         include: path.resolve(__dirname, "client/assets"),
         type: "asset/resource",
       },
