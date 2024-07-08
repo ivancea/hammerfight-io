@@ -1,6 +1,7 @@
 import Two from "two.js";
 import { Texture } from "two.js/src/effects/texture";
 import { Group } from "two.js/src/group";
+import { Circle } from "two.js/src/shapes/circle";
 import { Line } from "two.js/src/shapes/line";
 import { Rectangle } from "two.js/src/shapes/rectangle";
 import { Text } from "two.js/src/text";
@@ -165,6 +166,9 @@ function internalUpdatePlayer(player: Player) {
   const playerGroup = two.scene.getById(playerGroupId(player)) as
     | Group
     | undefined;
+  const playerBody = playerGroup?.getById(playerBodyId(player)) as
+    | Circle
+    | undefined;
   const playerName = playerGroup?.getById(playerNameId(player)) as
     | Text
     | undefined;
@@ -172,13 +176,14 @@ function internalUpdatePlayer(player: Player) {
     playerHealthHealthId(player),
   ) as Rectangle | undefined;
 
-  if (!playerGroup || !playerName || !playerHealthHealth) {
+  if (!playerGroup || !playerBody || !playerName || !playerHealthHealth) {
     internalAddPlayer(player);
     return;
   }
 
   playerGroup.position.set(player.position.x, player.position.y);
   playerName.value = player.username;
+  playerBody.scale = (player.radius * 2) / SHIP_IMAGE_SIZE;
 
   const healthPercentage = player.health / player.maxHealth;
   const totalHealthPixels = player.radius * 2 - 2;
@@ -279,7 +284,9 @@ function internalAddPlayer(player: Player) {
 function internalRemovePlayer(player: Player) {
   assert(two, "Game not initialized");
 
-  const playerGroup = two.scene.getById(playerGroupId(player));
+  const playerGroup = two.scene.getById(playerGroupId(player)) as
+    | Group
+    | undefined;
 
   assert(playerGroup, "Player group not found");
 
