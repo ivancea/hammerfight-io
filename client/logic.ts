@@ -1,10 +1,11 @@
 import { type Socket } from "socket.io-client";
 import { Player } from "../common/types/player";
 import { Room } from "../common/types/room";
-import { subtract, Vector } from "../common/vector";
+import { magnitude, subtract, Vector, withMagnitude } from "../common/vector";
 import {
   destroyContext,
   getContext,
+  getCurrentPlayer,
   isContextSet,
   isPlayerAlive,
   setContext,
@@ -106,10 +107,21 @@ export function updateAcceleration(mousePosition: Vector) {
 
   const maxPlayerAcceleration = getContext().room.maxPlayerAcceleration;
 
-  const acceleration = {
-    x: xAcc * maxPlayerAcceleration,
-    y: yAcc * maxPlayerAcceleration,
-  };
+  const acceleration = withMagnitude(
+    {
+      x: xAcc,
+      y: yAcc,
+    },
+    maxPlayerAcceleration,
+  );
 
-  getContext().socket.emit("updateAcceleration", { acceleration });
+  const lastAcceleration = getCurrentPlayer().acceleration;
+
+  // Only send acceleration if it changed by more than 1% of the max acceleration
+  if (
+    magnitude(subtract(acceleration, lastAcceleration)) >
+    getContext().room.maxPlayerAcceleration / 100
+  ) {
+    getContext().socket.emit("updateAcceleration", { acceleration });
+  }
 }

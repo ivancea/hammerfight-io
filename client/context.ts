@@ -33,8 +33,14 @@ export function destroyContext() {
   context = undefined;
 }
 
-export function isPlayerAlive() {
+export function getCurrentPlayer() {
   const player = getContext().room.players[getContext().playerId];
+  assert(player, "Current player not found");
+  return player;
+}
+
+export function isPlayerAlive() {
+  const player = getCurrentPlayer();
   return player && player.health > 0;
 }
 

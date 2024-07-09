@@ -44,7 +44,8 @@ server.io.on("connection", (socket) => {
       room.maxPlayerAcceleration,
     );
 
-    server.broadcastRoom(room).emit("playerUpdated", { player });
+    // TODO: Should we send this? Just sending roomUpdated may be enough
+    // server.broadcastRoom(room).emit("playerUpdated", { player });
   });
 });
 

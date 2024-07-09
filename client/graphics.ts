@@ -10,7 +10,12 @@ import { Player } from "../common/types/player";
 import { Room } from "../common/types/room";
 import { Vector } from "../common/vector";
 import backgroundImage from "./assets/background.jpg";
-import { getContext, isDebugMode, isPlayerAlive } from "./context";
+import {
+  getContext,
+  getCurrentPlayer,
+  isDebugMode,
+  isPlayerAlive,
+} from "./context";
 import { getTextures, SHIP_IMAGE_SIZE } from "./graphics.textures";
 import {
   addFlailWeapon,
@@ -143,9 +148,8 @@ export function removePlayer(player: Player) {
 
 export function getScreenPlayerPosition() {
   assert(two, "Game not initialized");
-  const context = getContext();
 
-  const player = context.room.players[context.playerId];
+  const player = getCurrentPlayer();
   assert(player, "Player not found");
 
   return {
@@ -313,9 +317,8 @@ function centerPlayer() {
   }
 
   assert(two, "Game not initialized");
-  const context = getContext();
 
-  const player = context.room.players[context.playerId];
+  const player = getCurrentPlayer();
   assert(player, "Player not found");
 
   const rect = getDomElement().getBoundingClientRect();
