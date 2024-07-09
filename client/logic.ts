@@ -2,11 +2,11 @@ import { type Socket } from "socket.io-client";
 import { Player } from "../common/types/player";
 import { Room } from "../common/types/room";
 import {
+  clampMagnitude,
   magnitude,
   multiply,
   subtract,
   Vector,
-  withMagnitude,
 } from "../common/vector";
 import {
   destroyContext,
@@ -105,14 +105,13 @@ export function updateAcceleration(mousePosition: Vector) {
 
   const delta = subtract(mousePosition, playerPosition);
 
-  const baseSize = Math.min(screenSize.x, screenSize.y) * 0.02;
+  const baseSize = Math.min(screenSize.x, screenSize.y) * 0.05;
 
   const magnitudePercent = magnitude(delta) / baseSize;
 
   const maxPlayerAcceleration = getContext().room.maxPlayerAcceleration;
 
-  // TODO: Change to clampMagnitude to make acceleration progressive?
-  const acceleration = withMagnitude(
+  const acceleration = clampMagnitude(
     multiply(delta, magnitudePercent),
     maxPlayerAcceleration,
   );
