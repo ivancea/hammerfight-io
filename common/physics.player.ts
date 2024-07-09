@@ -3,10 +3,10 @@ import {
   applyFriction,
   handleCircleCollisionWithLimits,
   handleCirclesCollision,
+  moveWithAcceleration,
 } from "./physics.common";
 import { Player } from "./types/player";
 import { Room } from "./types/room";
-import { add, clampMagnitude, multiply } from "./vector";
 
 export function movePlayer(player: Player, room: Room, elapsedTime: number) {
   // Acceleration increases with the difference between the player's velocity and the expected velocity
@@ -23,17 +23,7 @@ export function movePlayer(player: Player, room: Room, elapsedTime: number) {
       ),
   };
 
-  const newPosition = add(
-    player.position,
-    multiply(player.velocity, elapsedTime),
-    multiply(acceleration, 0.5 * elapsedTime * elapsedTime),
-  );
-  const newVelocity = clampMagnitude(
-    add(player.velocity, multiply(acceleration, elapsedTime)),
-    room.maxPlayerSpeed,
-  );
-  player.position = newPosition;
-  player.velocity = newVelocity;
+  moveWithAcceleration(player, acceleration, room.maxPlayerSpeed, elapsedTime);
 }
 
 export function handlePlayerCollisions(

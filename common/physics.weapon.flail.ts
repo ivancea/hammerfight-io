@@ -3,6 +3,7 @@ import {
   applyFriction,
   handleCircleCollisionWithLimits,
   handleCirclesCollision,
+  moveWithAcceleration,
 } from "./physics.common";
 import { ELASTICITY } from "./physics.constants";
 import { Player } from "./types/player";
@@ -16,20 +17,7 @@ export function moveFlailWeapon(
   room: Room,
   elapsedTime: number,
 ) {
-  const acceleration = room.gravity;
-
-  const newPosition = add(
-    weapon.position,
-    multiply(weapon.velocity, elapsedTime),
-    multiply(acceleration, 0.5 * elapsedTime * elapsedTime),
-  );
-  const newVelocity = clampMagnitude(
-    add(weapon.velocity, multiply(acceleration, elapsedTime)),
-    weapon.maxSpeed,
-  );
-
-  weapon.position = newPosition;
-  weapon.velocity = newVelocity;
+  moveWithAcceleration(weapon, room.gravity, weapon.maxSpeed, elapsedTime);
 
   // Chain length constraint
   const chainVector = subtract(player.position, weapon.position);

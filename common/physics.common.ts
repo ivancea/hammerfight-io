@@ -1,5 +1,12 @@
 import { ELASTICITY, FRICTION_CONSTANT } from "./physics.constants";
-import { add, magnitude, multiply, Vector, withMagnitude } from "./vector";
+import {
+  add,
+  clampMagnitude,
+  magnitude,
+  multiply,
+  Vector,
+  withMagnitude,
+} from "./vector";
 
 type EntityWithPosition = {
   position: Vector;
@@ -14,6 +21,26 @@ type CircleCollider = EntityWithPosition &
     radius: number;
     weight: number;
   };
+
+export function moveWithAcceleration(
+  entity: EntityWithPosition & EntityWithVelocity,
+  acceleration: Vector,
+  maxSpeed: number,
+  elapsedTime: number,
+) {
+  const newPosition = add(
+    entity.position,
+    multiply(entity.velocity, elapsedTime),
+    multiply(acceleration, 0.5 * elapsedTime * elapsedTime),
+  );
+  const newVelocity = clampMagnitude(
+    add(entity.velocity, multiply(acceleration, elapsedTime)),
+    maxSpeed,
+  );
+
+  entity.position = newPosition;
+  entity.velocity = newVelocity;
+}
 
 /**
  * Handles the collision between two circles.
