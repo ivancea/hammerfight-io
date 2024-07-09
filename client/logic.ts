@@ -1,7 +1,13 @@
 import { type Socket } from "socket.io-client";
 import { Player } from "../common/types/player";
 import { Room } from "../common/types/room";
-import { magnitude, subtract, Vector, withMagnitude } from "../common/vector";
+import {
+  magnitude,
+  multiply,
+  subtract,
+  Vector,
+  withMagnitude,
+} from "../common/vector";
 import {
   destroyContext,
   getContext,
@@ -99,28 +105,30 @@ export function updateAcceleration(mousePosition: Vector) {
 
   const delta = subtract(mousePosition, playerPosition);
 
-  const baseSize = Math.min(screenSize.x, screenSize.y) * 0.2;
+  const baseSize = Math.min(screenSize.x, screenSize.y) * 0.02;
 
-  // [-1, 1] range
-  const xAcc = Math.max(-1, Math.min(1, delta.x / baseSize));
-  const yAcc = Math.max(-1, Math.min(1, delta.y / baseSize));
+  const magnitudePercent = magnitude(delta) / baseSize;
 
   const maxPlayerAcceleration = getContext().room.maxPlayerAcceleration;
 
+  // TODO: Change to clampMagnitude to make acceleration progressive?
   const acceleration = withMagnitude(
-    {
-      x: xAcc,
-      y: yAcc,
-    },
+    multiply(delta, magnitudePercent),
     maxPlayerAcceleration,
   );
 
   const lastAcceleration = getCurrentPlayer().acceleration;
 
-  // Only send acceleration if it changed by more than 1% of the max acceleration
+  // Only send acceleration if it changed by more than 1%
+  const lastAccelerationMagnitude = magnitude(lastAcceleration);
+  const accelerationChangeMagnitude = magnitude(
+    subtract(acceleration, lastAcceleration),
+  );
+  const percentualChange =
+    accelerationChangeMagnitude / lastAccelerationMagnitude;
   if (
-    magnitude(subtract(acceleration, lastAcceleration)) >
-    getContext().room.maxPlayerAcceleration / 100
+    (lastAccelerationMagnitude === 0 && magnitude(acceleration) !== 0) ||
+    percentualChange > 0.01
   ) {
     getContext().socket.emit("updateAcceleration", { acceleration });
   }
