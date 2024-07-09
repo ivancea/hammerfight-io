@@ -50,6 +50,7 @@ export function moveWithAcceleration(
 export function handleCirclesCollision(
   collider1: CircleCollider,
   collider2: CircleCollider,
+  elapsedTime: number,
 ): [number, number] {
   const separationVector = {
     x: collider2.position.x - collider1.position.x,
@@ -81,11 +82,17 @@ export function handleCirclesCollision(
 
   collider1.velocity = add(
     collider1.velocity,
-    multiply(collider1PushVector, ELASTICITY * collider2WeightRatio),
+    multiply(
+      collider1PushVector,
+      (ELASTICITY * collider2WeightRatio) / elapsedTime,
+    ),
   );
   collider2.velocity = add(
     collider2.velocity,
-    multiply(collider2PushVector, ELASTICITY * collider1WeightRatio),
+    multiply(
+      collider2PushVector,
+      (ELASTICITY * collider1WeightRatio) / elapsedTime,
+    ),
   );
 
   const force = minDistance - distance;
@@ -96,6 +103,7 @@ export function handleCircleCollisionWithLimits(
   collider: CircleCollider,
   width: number,
   height: number,
+  elapsedTime: number,
 ) {
   const pushVector = { x: 0, y: 0 };
 
@@ -112,7 +120,10 @@ export function handleCircleCollisionWithLimits(
   }
 
   collider.position = add(collider.position, pushVector);
-  collider.velocity = add(collider.velocity, multiply(pushVector, ELASTICITY));
+  collider.velocity = add(
+    collider.velocity,
+    multiply(pushVector, ELASTICITY / elapsedTime),
+  );
 }
 
 export function applyFriction(entity: EntityWithVelocity, elapsedTime: number) {

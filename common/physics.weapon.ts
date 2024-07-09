@@ -35,10 +35,19 @@ export function handleWeaponCollisions(
   }
 }
 
-export function handleWeaponLimitsCollisions(player: Player, room: Room) {
+export function handleWeaponLimitsCollisions(
+  player: Player,
+  room: Room,
+  elapsedTime: number,
+) {
   switch (player.weapon.type) {
     case "flail":
-      handleFlailWeaponLimitsCollisions(player.weapon, player, room);
+      handleFlailWeaponLimitsCollisions(
+        player.weapon,
+        player,
+        room,
+        elapsedTime,
+      );
       break;
   }
 }

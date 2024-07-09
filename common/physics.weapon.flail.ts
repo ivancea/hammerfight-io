@@ -34,7 +34,7 @@ export function moveFlailWeapon(
       weapon.velocity,
       // Bounce on chain length
       // The higher the elasticity coefficient, the fastest the weapon will swing
-      multiply(positionDelta, ELASTICITY),
+      multiply(positionDelta, ELASTICITY / elapsedTime),
     );
   }
 }
@@ -51,7 +51,11 @@ export function handleFlailWeaponCollisions(
       continue;
     }
 
-    const [, otherPlayerDamage] = handleCirclesCollision(weapon, otherPlayer);
+    const [, otherPlayerDamage] = handleCirclesCollision(
+      weapon,
+      otherPlayer,
+      elapsedTime,
+    );
 
     if (otherPlayerDamage > 0) {
       onPlayerDamage({
@@ -64,7 +68,7 @@ export function handleFlailWeaponCollisions(
 
     switch (otherPlayer.weapon.type) {
       case "flail":
-        handleCirclesCollision(weapon, otherPlayer.weapon);
+        handleCirclesCollision(weapon, otherPlayer.weapon, elapsedTime);
         break;
     }
   }
@@ -74,8 +78,14 @@ export function handleFlailWeaponLimitsCollisions(
   weapon: FlailWeapon,
   player: Player,
   room: Room,
+  elapsedTime: number,
 ) {
-  handleCircleCollisionWithLimits(weapon, room.size.x, room.size.y);
+  handleCircleCollisionWithLimits(
+    weapon,
+    room.size.x,
+    room.size.y,
+    elapsedTime,
+  );
 }
 
 export function applyFrictionToFlailWeapon(

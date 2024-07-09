@@ -46,6 +46,7 @@ export function handlePlayerCollisions(
     const [playerDamage, otherPlayerDamage] = handleCirclesCollision(
       player,
       otherPlayer,
+      elapsedTime,
     );
 
     if (playerDamage > 0) {
@@ -68,8 +69,17 @@ export function handlePlayerCollisions(
   }
 }
 
-export function handlePlayerLimitsCollisions(player: Player, room: Room) {
-  handleCircleCollisionWithLimits(player, room.size.x, room.size.y);
+export function handlePlayerLimitsCollisions(
+  player: Player,
+  room: Room,
+  elapsedTime: number,
+) {
+  handleCircleCollisionWithLimits(
+    player,
+    room.size.x,
+    room.size.y,
+    elapsedTime,
+  );
 }
 
 export function applyFrictionToPlayer(

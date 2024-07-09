@@ -62,7 +62,7 @@ function createRoom(): Room {
       updateRoom(room, newUpdateTime - lastUpdateTime);
       lastUpdateTime = newUpdateTime;
     }
-  }, 10);
+  }, 15);
 
   return room;
 }

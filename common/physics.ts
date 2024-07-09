@@ -40,8 +40,8 @@ export function applyPhysics(
 
   // Handle limits collisions
   for (const player of Object.values(room.players)) {
-    handlePlayerLimitsCollisions(player, room);
-    handleWeaponLimitsCollisions(player, room);
+    handlePlayerLimitsCollisions(player, room, elapsedTime);
+    handleWeaponLimitsCollisions(player, room, elapsedTime);
   }
 
   // Apply friction
