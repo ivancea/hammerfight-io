@@ -5,7 +5,7 @@ import { makePlayer, Player } from "../common/types/player";
 import { Room } from "../common/types/room";
 import { makeFlailWeapon } from "../common/types/weapon";
 import { divide } from "../common/vector";
-import { server, Socket } from "./socket-io";
+import { server, Socket } from "./server";
 import {
   findOrCreateRoomWithSpace,
   getRoom,

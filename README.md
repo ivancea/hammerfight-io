@@ -4,15 +4,28 @@ HammerFight-like browser game.
 
 ## How to run
 
-The server will run on port 80. It's configured to also serve the frontend.
+The server will open on the configured port, and will also serve the frontend.
+
+### Environment variables
+
+Check `.env.defaults` to see the available environment variables.
+You can copy it to `.env` and change the values there, or define the values directly.
 
 ### With Node 20
 
-Run with `npm start`
+Run in dev mode with `npm start`.
+
+Run in production mode with `npm run build && npm run serve`.
 
 ### With Docker
 
-Run with `docker compose up`
+> 💡 You can define environment variables in the `docker-compose.yml` file directly.
+> Remember to also change the `ports` property accordingly.
+
+Run with `docker compose up`.
+
+It will build the client and run the server at container start.
+You can modify it to build in a different layer, but you won't be able to change the environment variables dynamically that way.
 
 ## Client-Server logic
 

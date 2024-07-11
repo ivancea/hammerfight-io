@@ -1,8 +1,6 @@
 import compression from "compression";
 import express from "express";
 import { createServer } from "node:http";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
 import {
   RemoteSocket,
   Server as SocketIoServer,
@@ -14,6 +12,7 @@ import {
   SocketIoClientSentEvents,
   SocketIoServerSentEvents,
 } from "../common/types/socket-io";
+import { joinUrl } from "../common/urls";
 
 export type SocketData = never;
 
@@ -31,28 +30,26 @@ export type Server = SocketIoServer<
 let io: Server | undefined;
 
 export const server = {
-  initialize(port: number) {
+  initialize(port: number, basePath: string) {
     assert(!io, "Socket.IO server already initialized");
 
     const app = express();
     const server = createServer(app);
 
-    io = new SocketIoServer(server);
+    io = new SocketIoServer(server, {
+      path: joinUrl("/", basePath, "socket.io/"),
+      serveClient: false,
+    });
 
     // TODO: Limit requests per second and disconnect players that exceed it
 
-    const __dirname = dirname(fileURLToPath(import.meta.url));
-    const clientDir = join(__dirname, "client");
-
     app.use(compression());
-    app.use(express.static("build"));
-
-    app.get("/", (req, res) => {
-      res.sendFile(join(clientDir, "index.html"));
-    });
+    app.use(joinUrl("/", basePath, "/"), express.static("build"));
 
     server.listen(port, () => {
-      console.log(`Server running at http://localhost:${port}`);
+      console.log(
+        `Server running at http://localhost:${port}${joinUrl("/", basePath, "/")}`,
+      );
     });
   },
 

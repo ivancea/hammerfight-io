@@ -4,6 +4,8 @@ import type {
   SocketIoClientSentEvents,
   SocketIoServerSentEvents,
 } from "../common/types/socket-io";
+import { joinUrl } from "../common/urls";
+import { env } from "./env";
 import {
   initializeGame,
   playerDied,
@@ -25,7 +27,9 @@ export function joinRoom(username: string, debugMode: boolean) {
     stopGame();
   }
 
-  socket = io();
+  socket = io({
+    path: joinUrl("/", env.BASE_PATH, "socket.io/"),
+  });
 
   socket.on("playerJoined", ({ player }) => {
     console.log(`Player ${player.id} joined the room`);

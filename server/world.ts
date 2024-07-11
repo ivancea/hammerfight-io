@@ -2,7 +2,7 @@ import { assert } from "../common/errors";
 import { Player } from "../common/types/player";
 import { makeRoom, Room } from "../common/types/room";
 import { updateRoom } from "./logic";
-import { Socket } from "./socket-io";
+import { Socket } from "./server";
 
 export type World = {
   /**

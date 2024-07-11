@@ -1,3 +1,4 @@
+import DotenvWebpackPlugin from "dotenv-webpack";
 import HtmlWebpackPlugin from "html-webpack-plugin";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import path from "path";
@@ -44,5 +45,10 @@ export default {
       template: "./client/index.html",
     }),
     new MiniCssExtractPlugin(),
+    new DotenvWebpackPlugin({
+      safe: ".env.defaults",
+      defaults: ".env.defaults",
+      systemvars: true,
+    }),
   ],
 };

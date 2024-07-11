@@ -1,9 +1,10 @@
 import { clampMagnitude } from "../common/vector";
+import { env } from "./env";
 import { disconnectPlayer, joinPlayer } from "./logic";
-import { server } from "./socket-io";
+import { server } from "./server";
 import { getPlayer, getRoom } from "./world";
 
-server.initialize(80);
+server.initialize(env.PORT, env.BASE_PATH);
 
 server.io.on("connection", (socket) => {
   console.log(`User ${socket.id} connected`);
