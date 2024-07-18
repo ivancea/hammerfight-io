@@ -46,7 +46,7 @@ export function disconnectPlayer(player: Player) {
   delete playersById[player.id];
   delete socketsById[player.id];
 
-  if (Object.values(room.players).length === 0) {
+  if (!Object.values(room.players).some((p) => !p.isBot)) {
     delete world.rooms[room.id];
   }
 

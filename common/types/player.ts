@@ -15,6 +15,8 @@ export type Player = {
   roomId: number;
   joinTimestamp: number;
 
+  isBot: boolean;
+
   username: string;
 
   maxHealth: number;
@@ -73,6 +75,31 @@ export function makePlayer(
     id: playerId,
     roomId,
     joinTimestamp: Date.now(),
+    isBot: false,
+    username,
+    maxHealth: 1000,
+    health: 1000,
+    radius: 20,
+    weight: 50,
+    position,
+    velocity: { x: 0, y: 0 },
+    acceleration: { x: 0, y: 0 },
+    weapon,
+  };
+}
+
+export function makeBot(
+  playerId: string,
+  roomId: number,
+  username: string,
+  position: Vector,
+  weapon: Weapon,
+): Player {
+  return {
+    id: playerId,
+    roomId,
+    joinTimestamp: Date.now(),
+    isBot: true,
     username,
     maxHealth: 1000,
     health: 1000,

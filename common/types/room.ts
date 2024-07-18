@@ -1,5 +1,5 @@
 import { Vector } from "../vector";
-import { makePlayer, Player } from "./player";
+import { makeBot, Player } from "./player";
 import { makeFlailWeapon } from "./weapon";
 
 /**
@@ -64,14 +64,14 @@ export function makeRoom(roomId: number): Room {
     id: roomId,
     maxPlayers: 5,
     players: {
-      _BOT_1: makePlayer(
+      _BOT_1: makeBot(
         "_BOT_1",
         roomId,
         "BOT 1",
         { x: 1000 - 200, y: 1000 },
         makeFlailWeapon({ x: 1000 - 200, y: 1000 }),
       ),
-      _BOT_2: makePlayer(
+      _BOT_2: makeBot(
         "_BOT_2",
         roomId,
         "BOT 2",
