@@ -60,6 +60,8 @@ export type Room = {
 };
 
 export function makeRoom(roomId: number): Room {
+  const roomSize = { x: 2000, y: 2000 };
+
   return {
     id: roomId,
     maxPlayers: 5,
@@ -68,18 +70,18 @@ export function makeRoom(roomId: number): Room {
         "_BOT_1",
         roomId,
         "BOT 1",
-        { x: 1000 - 200, y: 1000 },
+        { x: roomSize.x / 3, y: roomSize.y / 2 },
         makeFlailWeapon({ x: 1000 - 200, y: 1000 }),
       ),
       _BOT_2: makeBot(
         "_BOT_2",
         roomId,
         "BOT 2",
-        { x: 1000 + 200, y: 1000 },
+        { x: (roomSize.x * 2) / 3, y: roomSize.y / 2 },
         makeFlailWeapon({ x: 1000 + 200, y: 1000 }),
       ),
     },
-    size: { x: 2_000, y: 2_000 },
+    size: roomSize,
     gravity: { x: 0, y: 200 },
     maxPlayerSpeed: 500,
     maxPlayerAcceleration: 400,

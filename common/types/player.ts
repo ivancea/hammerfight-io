@@ -1,6 +1,11 @@
 import { Vector } from "../vector";
 import { Weapon } from "./weapon";
 
+export const AI_CONTEXT_SYMBOL = Symbol("AI_CONTEXT");
+export type AiContext = {
+  lastNameUpdate: number;
+};
+
 /**
  * Represents a player data in a room.
  */
@@ -62,6 +67,8 @@ export type Player = {
    * The weapon the player is holding, with all its data for simulation.
    */
   weapon: Weapon;
+
+  [AI_CONTEXT_SYMBOL]?: AiContext;
 };
 
 export function makePlayer(

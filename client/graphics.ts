@@ -229,7 +229,8 @@ function internalAddPlayer(player: Player) {
     -player.radius - 2 - 7 - 8, // -Radius - margin - halfTextSize - healthBar
   );
   playerName.id = playerNameId(player);
-  playerName.size = 14;
+  playerName.size = 16;
+  playerName.weight = 700;
 
   const playerHealthBackground = two.makeRectangle(
     0,

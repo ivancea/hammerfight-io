@@ -73,3 +73,17 @@ export function clamp(
     y: Math.min(maxY, Math.max(minY, vector.y)),
   };
 }
+
+/**
+ * Rotates a vector by a given angle.
+ *
+ * @param vector The vector to rotate
+ * @param angle The angle, in radians, to rotate. Positive for clockwise, negative for counter-clockwise
+ * @returns The rotated vector
+ */
+export function rotate(vector: Vector, angle: number) {
+  return {
+    x: vector.x * Math.cos(angle) - vector.y * Math.sin(angle),
+    y: vector.x * Math.sin(angle) + vector.y * Math.cos(angle),
+  };
+}

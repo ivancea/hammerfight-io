@@ -5,6 +5,7 @@ import { makePlayer, Player } from "../common/types/player";
 import { Room } from "../common/types/room";
 import { makeFlailWeapon } from "../common/types/weapon";
 import { divide } from "../common/vector";
+import { updateBots } from "./logic.ai";
 import { server, Socket } from "./server";
 import {
   findOrCreateRoomWithSpace,
@@ -56,6 +57,7 @@ export function disconnectPlayer(player: Player) {
 export function updateRoom(room: Room, elapsedTime: number) {
   const damages: Damage[] = [];
 
+  updateBots(room, elapsedTime);
   applyPhysics(room, elapsedTime, (damage) => damages.push(damage));
 
   const deadPlayerIds = new Set<string>();
