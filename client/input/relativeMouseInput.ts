@@ -1,13 +1,6 @@
 import { assert } from "../../common/errors";
-import {
-  divide,
-  magnitude,
-  multiply,
-  Vector,
-  withMagnitude,
-} from "../../common/vector";
-import { Context, getContext, getCurrentPlayer } from "../context";
-import { getScreenSize } from "../graphics";
+import { magnitude, Vector, withMagnitude } from "../../common/vector";
+import { Context, getContext } from "../context";
 import { InputHandler } from "./inputHandler";
 
 /**
@@ -20,21 +13,32 @@ export function makeRelativeMouseInput(
   element: HTMLElement,
   updateAcceleration: (newAcceleration: Vector) => void,
 ): InputHandler {
-  const recalculateAcceleration = (
+  /**
+   *
+   */
+  const accumulatedMovement: Vector = { x: 0, y: 0 };
+
+  const updateMovement = (
     mouseMovement: Vector,
     updateAcceleration: (newAcceleration: Vector) => void,
   ) => {
-    const screenSize = getScreenSize();
+    accumulatedMovement.x = mouseMovement.x + accumulatedMovement.x * 0.5;
+    accumulatedMovement.y = mouseMovement.y + accumulatedMovement.y * 0.5;
 
-    const baseSize = Math.min(screenSize.x, screenSize.y) * 0.05;
+    if (magnitude(accumulatedMovement) <= 1) {
+      updateAcceleration(accumulatedMovement);
+      return;
+    }
 
-    const magnitudePercent = magnitude(mouseMovement) / baseSize;
+    const sensitivity = 5;
+
+    const magnitudePercent = magnitude(accumulatedMovement) / sensitivity;
 
     const maxPlayerAcceleration = getContext().room.maxPlayerAcceleration;
 
     const acceleration = withMagnitude(
-      multiply(mouseMovement, magnitudePercent),
-      maxPlayerAcceleration,
+      accumulatedMovement,
+      Math.min(maxPlayerAcceleration, maxPlayerAcceleration * magnitudePercent),
     );
 
     updateAcceleration(acceleration);
@@ -42,16 +46,13 @@ export function makeRelativeMouseInput(
 
   // Setup
 
-  let lastManualAccelerationChange = 0;
-
   const onMouseMove = (event: MouseEvent) => {
     const mouseMovement = {
       x: event.movementX,
       y: event.movementY,
     };
 
-    recalculateAcceleration(mouseMovement, updateAcceleration);
-    lastManualAccelerationChange = Date.now();
+    updateMovement(mouseMovement, updateAcceleration);
   };
 
   element.addEventListener("mousemove", onMouseMove);
@@ -63,10 +64,8 @@ export function makeRelativeMouseInput(
   const interval = setInterval(() => {
     assert(context === getContext(), "Context changed");
 
-    if (lastManualAccelerationChange < Date.now() - 100) {
-      updateAcceleration(divide(getCurrentPlayer().acceleration, 2));
-    }
-  }, 20);
+    updateMovement({ x: 0, y: 0 }, updateAcceleration);
+  }, 50);
 
   return {
     terminate() {

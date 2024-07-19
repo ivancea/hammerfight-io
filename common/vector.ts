@@ -31,6 +31,13 @@ export function divide(v: Vector, scalar: number) {
   };
 }
 
+export function invert(v: Vector) {
+  return {
+    x: -v.x,
+    y: -v.y,
+  };
+}
+
 export function magnitude(v: Vector) {
   return Math.sqrt(v.x * v.x + v.y * v.y);
 }

@@ -1,10 +1,9 @@
 import { assert } from "../../common/errors";
 import {
-  clampMagnitude,
   magnitude,
-  multiply,
   subtract,
   Vector,
+  withMagnitude,
 } from "../../common/vector";
 import { Context, getContext } from "../context";
 import { getScreenPlayerPosition, getScreenSize } from "../graphics";
@@ -26,15 +25,15 @@ export function makeAbsoluteMouseInput(
 
     const delta = subtract(mousePosition, playerPosition);
 
-    const baseSize = Math.min(screenSize.x, screenSize.y) * 0.05;
+    const baseSize = Math.min(screenSize.x, screenSize.y) * 0.1;
 
     const magnitudePercent = magnitude(delta) / baseSize;
 
     const maxPlayerAcceleration = getContext().room.maxPlayerAcceleration;
 
-    const acceleration = clampMagnitude(
-      multiply(delta, magnitudePercent),
-      maxPlayerAcceleration,
+    const acceleration = withMagnitude(
+      delta,
+      Math.min(maxPlayerAcceleration, maxPlayerAcceleration * magnitudePercent),
     );
 
     updateAcceleration(acceleration);
