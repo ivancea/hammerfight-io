@@ -47,10 +47,6 @@ export function disconnectPlayer(player: Player) {
   delete playersById[player.id];
   delete socketsById[player.id];
 
-  if (!Object.values(room.players).some((p) => !p.isBot)) {
-    delete world.rooms[room.id];
-  }
-
   server.broadcastRoom(room).emit("playerLeft", { player });
 }
 
@@ -84,6 +80,10 @@ export function updateRoom(room: Room, elapsedTime: number) {
     server.broadcastRoom(room).emit("playerDied", { player: deadPlayer });
 
     disconnectPlayer(deadPlayer);
+  }
+
+  if (!Object.values(room.players).some((p) => !p.isBot)) {
+    delete world.rooms[room.id];
   }
 
   server.broadcastRoom(room).emit("roomUpdated", { room });
