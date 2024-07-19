@@ -39,6 +39,10 @@ export function getCurrentPlayer() {
   return player;
 }
 
+export function isCurrentPlayer(playerId: string) {
+  return getContext().playerId === playerId;
+}
+
 export function isPlayerAlive() {
   const player = getCurrentPlayer();
   return player && player.health > 0;

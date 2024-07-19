@@ -8,7 +8,6 @@ import { Text } from "two.js/src/text";
 import { assert } from "../common/errors";
 import { Player } from "../common/types/player";
 import { Room } from "../common/types/room";
-import { Vector } from "../common/vector";
 import backgroundImage from "./assets/background.jpg";
 import {
   getContext,
@@ -24,14 +23,10 @@ import {
 } from "./graphics.weapons.flail";
 import { hashCode } from "./utils";
 
-type EventHandlers = {
-  onMouseMove: (mousePosition: Vector) => void;
-};
-
 let two: Two | undefined;
 let resizeObserver: ResizeObserver | undefined;
 
-export function initializeGraphics(eventHandlers: EventHandlers) {
+export function initializeGraphics() {
   const context = getContext();
   const element = document.getElementById("game");
   assert(element, "Could not find game element");
@@ -79,17 +74,9 @@ export function initializeGraphics(eventHandlers: EventHandlers) {
 
   centerPlayer();
 
-  getDomElement().addEventListener("mousemove", (event) => {
-    assert(two, "Game not initialized");
-
-    const rect = getDomElement().getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
-
-    eventHandlers.onMouseMove({ x, y });
-  });
-
   two.play();
+
+  return getDomElement();
 }
 
 export function destroyGraphics() {

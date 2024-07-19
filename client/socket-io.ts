@@ -20,7 +20,11 @@ let socket:
   | Socket<SocketIoServerSentEvents, SocketIoClientSentEvents>
   | undefined;
 
-export function joinRoom(username: string, debugMode: boolean) {
+export function joinRoom(
+  username: string,
+  inputMode: string,
+  debugMode: boolean,
+) {
   if (socket) {
     socket.disconnect();
     socket = undefined;
@@ -67,6 +71,6 @@ export function joinRoom(username: string, debugMode: boolean) {
     assert(socket, "Socket should be defined");
     console.log(`Joined room ${room.id} as player ${player.id}`, room);
 
-    initializeGame(socket, room, player, debugMode);
+    initializeGame(socket, room, player, inputMode, debugMode);
   });
 }

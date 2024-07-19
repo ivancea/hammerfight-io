@@ -1,37 +1,33 @@
 import { type Socket } from "socket.io-client";
+import { assert } from "../common/errors";
 import { Player } from "../common/types/player";
 import { Room } from "../common/types/room";
-import {
-  clampMagnitude,
-  magnitude,
-  multiply,
-  subtract,
-  Vector,
-} from "../common/vector";
+import { magnitude, subtract, Vector } from "../common/vector";
 import {
   destroyContext,
   getContext,
   getCurrentPlayer,
-  isContextSet,
-  isPlayerAlive,
+  isCurrentPlayer,
   setContext,
 } from "./context";
 import {
   destroyGraphics,
-  getScreenPlayerPosition,
-  getScreenSize,
   initializeGraphics,
   removePlayer,
   updatePlayer,
   updateRoom,
 } from "./graphics";
+import { makeAbsoluteMouseInput } from "./input/absoluteMouseInput";
+import { InputHandler } from "./input/inputHandler";
+import { makeRelativeMouseInput } from "./input/relativeMouseInput";
 
-let lastMousePosition: Vector | undefined;
+let inputHandler: InputHandler | undefined;
 
 export function initializeGame(
   socket: Socket,
   room: Room,
   player: Player,
+  inputMode: string,
   debugMode: boolean,
 ) {
   const context = {
@@ -43,27 +39,30 @@ export function initializeGame(
 
   setContext(context);
 
-  initializeGraphics({
-    onMouseMove(mousePosition) {
-      updateAcceleration(mousePosition);
+  const htmlElement = initializeGraphics();
 
-      lastMousePosition = mousePosition;
-    },
-  });
+  switch (inputMode) {
+    case "RelativeMouse":
+      inputHandler = makeRelativeMouseInput(
+        context,
+        htmlElement,
+        updateAcceleration,
+      );
+      break;
 
-  const interval = setInterval(() => {
-    if (!isContextSet() || context !== getContext()) {
-      clearInterval(interval);
-      return;
-    }
-
-    if (lastMousePosition) {
-      updateAcceleration(lastMousePosition);
-    }
-  }, 10);
+    case "AbsoluteMouse":
+    default:
+      inputHandler = makeAbsoluteMouseInput(
+        context,
+        htmlElement,
+        updateAcceleration,
+      );
+      break;
+  }
 }
 
 export function stopGame() {
+  inputHandler?.terminate();
   destroyGraphics();
   destroyContext();
 }
@@ -75,12 +74,18 @@ export function playerJoined(player: Player) {
 }
 
 export function playerLeft(player: Player) {
-  delete getContext().room.players[player.id];
+  if (isCurrentPlayer(player.id)) {
+    inputHandler?.terminate();
+  }
 
-  removePlayer(player);
+  if (getContext().room.players[player.id]) {
+    removePlayer(player);
+    delete getContext().room.players[player.id];
+  }
 }
 
 export function playerDied(player: Player) {
+  assert(getContext().room.players[player.id], "Player does not exist");
   playerLeft(player);
 }
 
@@ -95,27 +100,7 @@ export function roomUpdated(room: Room) {
   updateRoom(oldRoom);
 }
 
-export function updateAcceleration(mousePosition: Vector) {
-  if (!isPlayerAlive()) {
-    return;
-  }
-
-  const screenSize = getScreenSize();
-  const playerPosition = getScreenPlayerPosition();
-
-  const delta = subtract(mousePosition, playerPosition);
-
-  const baseSize = Math.min(screenSize.x, screenSize.y) * 0.05;
-
-  const magnitudePercent = magnitude(delta) / baseSize;
-
-  const maxPlayerAcceleration = getContext().room.maxPlayerAcceleration;
-
-  const acceleration = clampMagnitude(
-    multiply(delta, magnitudePercent),
-    maxPlayerAcceleration,
-  );
-
+export function updateAcceleration(acceleration: Vector) {
   const lastAcceleration = getCurrentPlayer().acceleration;
 
   // Only send acceleration if it changed by more than 1%
