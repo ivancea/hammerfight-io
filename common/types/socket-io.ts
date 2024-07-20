@@ -7,6 +7,7 @@ export type SocketIoClientSentEvents = {
     [
       {
         username: string;
+        roomWithBots: boolean;
       },
       (room: Room, player: Player) => void,
     ]

@@ -1,6 +1,7 @@
 import { assert } from "../common/errors";
-import { Player } from "../common/types/player";
+import { makeBot, Player } from "../common/types/player";
 import { makeRoom, Room } from "../common/types/room";
+import { makeFlailWeapon } from "../common/types/weapon";
 import { updateRoom } from "./logic";
 import { Socket } from "./server";
 
@@ -30,14 +31,21 @@ let nextRoomId = 1;
 /**
  * Finds a room with space for a new player, or creates a new room if there's none.
  */
-export function findOrCreateRoomWithSpace(): Room {
+export function findOrCreateRoomWithSpace(roomWithBots: boolean): Room {
   for (const room of Object.values(world.rooms)) {
+    if (
+      roomWithBots !==
+      Object.values(room.players).some((player) => player.isBot)
+    ) {
+      continue;
+    }
+
     if (Object.keys(room.players).length < room.maxPlayers) {
       return room;
     }
   }
 
-  const newRoom: Room = createRoom();
+  const newRoom: Room = createRoom(roomWithBots);
 
   world.rooms[newRoom.id] = newRoom;
 
@@ -47,8 +55,28 @@ export function findOrCreateRoomWithSpace(): Room {
 /**
  * Creates a new room. Starts the room physics loop.
  */
-function createRoom(): Room {
+function createRoom(roomWithBots: boolean): Room {
   const room = makeRoom(nextRoomId++);
+
+  if (roomWithBots) {
+    const botCount = 2;
+    for (let i = 0; i < botCount; i++) {
+      const botId = `_BOT_${i + 1}`;
+      const botName = `BOT ${i + 1}`;
+      const position = {
+        x: (room.size.x / (botCount + 1)) * (i + 1),
+        y: room.size.y / 2,
+      };
+
+      room.players[botId] = makeBot(
+        botId,
+        room.id,
+        botName,
+        position,
+        makeFlailWeapon(position),
+      );
+    }
+  }
 
   world.rooms[room.id] = room;
 

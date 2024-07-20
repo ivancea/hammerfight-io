@@ -15,10 +15,14 @@ import {
   world,
 } from "./world";
 
-export function joinPlayer(socket: Socket, username: string) {
+export function joinPlayer(
+  socket: Socket,
+  username: string,
+  roomWithBots: boolean,
+) {
   // TODO: Validate username
 
-  const room = findOrCreateRoomWithSpace();
+  const room = findOrCreateRoomWithSpace(roomWithBots);
 
   server.addToRoom(socket, room);
 
@@ -84,6 +88,7 @@ export function updateRoom(room: Room, elapsedTime: number) {
 
   if (!Object.values(room.players).some((p) => !p.isBot)) {
     delete world.rooms[room.id];
+    console.log(`Deleted empty room ${room.id}`);
   }
 
   server.broadcastRoom(room).emit("roomUpdated", { room });

@@ -20,7 +20,11 @@ server.io.on("connection", (socket) => {
   });
 
   socket.on("requestJoin", (event, callback) => {
-    const { room, player } = joinPlayer(socket, event.username);
+    const { room, player } = joinPlayer(
+      socket,
+      event.username,
+      event.roomWithBots,
+    );
 
     console.log(
       `User ${socket.id} with name "${event.username}" joined room ${room.id}`,

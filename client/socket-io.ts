@@ -23,6 +23,7 @@ let socket:
 export function joinRoom(
   username: string,
   inputMode: string,
+  roomWithBots: boolean,
   debugMode: boolean,
 ) {
   if (socket) {
@@ -67,7 +68,7 @@ export function joinRoom(
     stopGame();
   });
 
-  socket.emit("requestJoin", { username }, (room, player) => {
+  socket.emit("requestJoin", { username, roomWithBots }, (room, player) => {
     assert(socket, "Socket should be defined");
     console.log(`Joined room ${room.id} as player ${player.id}`, room);
 

@@ -1,6 +1,5 @@
 import { Vector } from "../vector";
-import { makeBot, Player } from "./player";
-import { makeFlailWeapon } from "./weapon";
+import { Player } from "./player";
 
 /**
  * Container of all the data and players inside a game room.
@@ -65,22 +64,7 @@ export function makeRoom(roomId: number): Room {
   return {
     id: roomId,
     maxPlayers: 5,
-    players: {
-      _BOT_1: makeBot(
-        "_BOT_1",
-        roomId,
-        "BOT 1",
-        { x: roomSize.x / 3, y: roomSize.y / 2 },
-        makeFlailWeapon({ x: 1000 - 200, y: 1000 }),
-      ),
-      _BOT_2: makeBot(
-        "_BOT_2",
-        roomId,
-        "BOT 2",
-        { x: (roomSize.x * 2) / 3, y: roomSize.y / 2 },
-        makeFlailWeapon({ x: 1000 + 200, y: 1000 }),
-      ),
-    },
+    players: {},
     size: roomSize,
     gravity: { x: 0, y: 200 },
     maxPlayerSpeed: 500,

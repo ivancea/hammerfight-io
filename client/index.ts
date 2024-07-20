@@ -12,11 +12,13 @@ function main() {
       const inputMode = (
         document.getElementById("input-mode") as HTMLSelectElement
       ).value;
+      const bots = (document.getElementById("bots") as HTMLInputElement)
+        .checked;
       const debugMode = (
         document.getElementById("debug-mode") as HTMLInputElement
       ).checked;
 
-      joinRoom(username, inputMode, debugMode);
+      joinRoom(username, inputMode, bots, debugMode);
     });
 }
 
