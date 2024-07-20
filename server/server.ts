@@ -39,6 +39,7 @@ export const server = {
     io = new SocketIoServer(server, {
       path: joinUrl("/", basePath, "socket.io/"),
       serveClient: false,
+      perMessageDeflate: true,
     });
 
     // TODO: Limit requests per second and disconnect players that exceed it
