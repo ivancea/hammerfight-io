@@ -40,6 +40,8 @@ jobs:
           TF_VAR_hcloud_token: ${{ secrets.TF_VAR_HCLOUD_TOKEN }}
           TF_VAR_cloudflare_api_token: ${{ secrets.TF_VAR_CLOUDFLARE_API_TOKEN }}
           TF_VAR_cloudflare_zone_id: ${{ secrets.TF_VAR_CLOUDFLARE_ZONE_ID }}
+          TF_VAR_elastic_cloud_id: ${{ secrets.TF_VAR_ELASTIC_CLOUD_ID }}
+          TF_VAR_elastic_api_key: ${{ secrets.TF_VAR_ELASTIC_API_KEY }}
         run: |
           terraform plan -input=false
           terraform apply -auto-approve -input=false
