@@ -1,11 +1,5 @@
-data "git_commit" "current_commit" {
-  directory = "../"
-  revision  = "@"
-}
-
 resource "hcloud_server" "node-eu" {
-  count       = var.node_count
-  name        = "${var.node_name_prefix}-${count.index}"
+  name        = "${var.node_name_prefix}-0"
   location    = "fsn1"
   image       = "debian-12"
   server_type = "cx22"
