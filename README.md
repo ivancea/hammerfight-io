@@ -1,6 +1,13 @@
 # HammerFight.io
 
-HammerFight-like browser game.
+HammerFight-like multiplayer browser game. Available at [hammerfight.io](https://hammerfight.io).
+
+This game is inspired by the [Hammerfight](https://store.steampowered.com/app/41100/Hammerfight/) game mechanics,
+and adds multiplayer capabilities to it.
+
+The multiplayer system is similar to the one in [Agar.io](https://agar.io/), where players join a room, and start fighting each other.
+
+The name and domain, `Hammerfight.io`, is a homage to both games.
 
 ## How to run
 
