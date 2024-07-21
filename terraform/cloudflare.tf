@@ -1,6 +1,6 @@
 resource "cloudflare_record" "dns-record" {
   zone_id = var.cloudflare_zone_id
-  name    = "cloud"
+  name    = "@"
   value   = hcloud_server.node-eu.ipv4_address
   type    = "A"
   ttl     = 1
