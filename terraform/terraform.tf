@@ -14,6 +14,10 @@ terraform {
       source  = "metio/git"
       version = "~> 2024.7.19"
     }
+    tls = {
+      source  = "hashicorp/tls"
+      version = "~> 4.0.5"
+    }
     hcloud = {
       source  = "hetznercloud/hcloud"
       version = "~> 1.45"
@@ -26,6 +30,8 @@ terraform {
 }
 
 provider "git" {
+}
+provider "tls" {
 }
 
 provider "hcloud" {

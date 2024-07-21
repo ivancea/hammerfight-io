@@ -1,6 +1,7 @@
 import compression from "compression";
 import express from "express";
-import { createServer } from "node:http";
+import http from "node:http";
+import https from "node:https";
 import {
   RemoteSocket,
   Server as SocketIoServer,
@@ -13,6 +14,7 @@ import {
   SocketIoServerSentEvents,
 } from "../common/types/socket-io";
 import { joinUrl } from "../common/urls";
+import { env } from "./env";
 
 export type SocketData = never;
 
@@ -33,8 +35,18 @@ export const server = {
   initialize(port: number, basePath: string) {
     assert(!io, "Socket.IO server already initialized");
 
+    const isHttps = env.SSL_CERTIFICATE && env.SSL_PRIVATE_KEY;
+
     const app = express();
-    const server = createServer(app);
+    const server = isHttps
+      ? https.createServer(
+          {
+            cert: env.SSL_CERTIFICATE,
+            key: env.SSL_PRIVATE_KEY,
+          },
+          app,
+        )
+      : http.createServer(app);
 
     io = new SocketIoServer(server, {
       path: joinUrl("/", basePath, "socket.io/"),
@@ -49,7 +61,7 @@ export const server = {
 
     server.listen(port, () => {
       console.log(
-        `Server running at http://localhost:${port}${joinUrl("/", basePath, "/")}`,
+        `Server running at ${isHttps ? "https" : "http"}://localhost:${port}${joinUrl("/", basePath, "/")}`,
       );
     });
   },
