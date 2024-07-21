@@ -2,6 +2,7 @@ import { assert } from "../common/errors";
 import { makeBot, Player } from "../common/types/player";
 import { makeRoom, Room } from "../common/types/room";
 import { makeFlailWeapon } from "../common/types/weapon";
+import { getLogger } from "./logger";
 import { updateRoom } from "./logic";
 import { Socket } from "./server";
 
@@ -87,7 +88,11 @@ function createRoom(roomWithBots: boolean): Room {
       clearInterval(intervalId);
     } else {
       const newUpdateTime = Date.now() / 1000;
-      updateRoom(room, newUpdateTime - lastUpdateTime);
+      const elapsedTime = newUpdateTime - lastUpdateTime;
+      getLogger().measureSpan("room interval", elapsedTime * 1000);
+      const updateRoomSpan = getLogger().measureSpan("updateRoom");
+      updateRoom(room, elapsedTime);
+      updateRoomSpan.end();
       lastUpdateTime = newUpdateTime;
     }
   }, 15);

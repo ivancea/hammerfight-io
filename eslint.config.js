@@ -14,11 +14,25 @@ const gitignorePath = path.resolve(__dirname, ".gitignore");
 export default tseslint.config(
   includeIgnoreFile(gitignorePath),
   eslint.configs.recommended,
-  ...tseslint.configs.strict,
+  ...tseslint.configs.strictTypeChecked.map((config) => ({
+    ...config,
+    files: ["**/*.ts"],
+  })),
   eslintPluginPrettierRecommended,
   {
+    files: ["**/*.ts"],
     rules: {
       "@typescript-eslint/no-dynamic-delete": "off",
+      "@typescript-eslint/restrict-template-expressions": [
+        "error",
+        { allowNumber: true },
+      ],
+    },
+    languageOptions: {
+      parserOptions: {
+        project: true,
+        tsconfigRootDir: __dirname,
+      },
     },
   },
   {

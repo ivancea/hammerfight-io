@@ -58,8 +58,13 @@ export function disconnectPlayer(player: Player) {
 export function updateRoom(room: Room, elapsedTime: number) {
   const damages: Damage[] = [];
 
+  const updateBotsSpan = getLogger().measureSpan("updateBots");
   updateBots(room);
+  updateBotsSpan.end();
+
+  const applyPhysicsSpan = getLogger().measureSpan("applyPhysics");
   applyPhysics(room, elapsedTime, (damage) => damages.push(damage));
+  applyPhysicsSpan.end();
 
   const deadPlayerIds = new Set<string>();
 

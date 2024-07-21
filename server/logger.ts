@@ -1,12 +1,24 @@
 /* eslint-disable no-console */
 import { Client as ESClient } from "@elastic/elasticsearch";
+import {
+  MappingProperty,
+  PropertyName,
+} from "@elastic/elasticsearch/lib/api/types";
 import os from "os";
 import { env } from "./env";
+
+const LOGGER_MODULE = "server";
 
 type Logger = {
   info(message: string): void;
   warn(message: string): void;
   error(message: string): void;
+  measureSpan(name: string, elapsedTime?: number): SpanMetrics;
+};
+
+type SpanMetrics = {
+  name: string;
+  end: () => void;
 };
 
 type InternalLogger = Logger & {
@@ -57,6 +69,16 @@ function makeConsoleLogger(otherLogger?: InternalLogger): InternalLogger {
     destroy() {
       otherLogger?.destroy();
     },
+    measureSpan(name: string, elapsedTime?: number) {
+      return (
+        otherLogger?.measureSpan(name, elapsedTime) ?? {
+          name,
+          end() {
+            // No-op for console logger
+          },
+        }
+      );
+    },
   };
 }
 
@@ -74,46 +96,70 @@ async function makeElasticSearchLogger(
     },
   });
   const hostname = os.hostname();
-  const index = `${indexNamespace}_logs`;
+  const logsIndex = `${indexNamespace}_logs`;
+  const spansIndex = `${indexNamespace}_spans`;
+  const bufferLimit = 1000;
 
   const logsBuffer: Record<string, unknown>[] = [];
+  const spansBuffer: Record<string, unknown>[] = [];
 
-  await initializeElasticSearch(client, index);
+  await initializeElasticSearch(client, logsIndex, spansIndex);
 
-  function flushLogs() {
-    if (logsBuffer.length === 0) {
+  function flush(index: string, buffer: Record<string, unknown>[]) {
+    if (buffer.length === 0) {
       return;
     }
 
     client
       .bulk({
-        operations: logsBuffer.flatMap((log) => [
+        operations: buffer.flatMap((log) => [
           { index: { _index: index } },
           log,
         ]),
       })
-      .catch((error) => {
-        console.error("Error sending logs to ElasticSearch", error);
+      .catch((error: unknown) => {
+        console.error(
+          `Error sending logs to ElasticSearch index ${index}`,
+          error,
+        );
       });
 
-    logsBuffer.length = 0;
+    buffer.length = 0;
   }
 
-  function addLog(level: string, message: string) {
+  function addLog(level: "info" | "warn" | "error", message: string) {
     logsBuffer.push({
       hostname,
+      module: LOGGER_MODULE,
       timestamp: Date.now(),
       level,
       message,
     });
 
-    if (logsBuffer.length >= 100) {
-      flushLogs();
+    if (logsBuffer.length >= bufferLimit) {
+      flush(logsIndex, logsBuffer);
+    }
+  }
+
+  function addSpan(name: string, startTime: number, endTime: number) {
+    spansBuffer.push({
+      hostname,
+      module: LOGGER_MODULE,
+      timestamp: Date.now(),
+      name,
+      startTime,
+      endTime,
+      elapsedTimeMillis: endTime - startTime,
+    });
+
+    if (spansBuffer.length >= bufferLimit) {
+      flush(spansIndex, spansBuffer);
     }
   }
 
   const interval = setInterval(() => {
-    flushLogs();
+    flush(logsIndex, logsBuffer);
+    flush(spansIndex, spansBuffer);
   }, 5000);
 
   return {
@@ -127,29 +173,88 @@ async function makeElasticSearchLogger(
       addLog("error", message);
     },
     destroy() {
-      flushLogs();
+      flush(logsIndex, logsBuffer);
+      flush(spansIndex, spansBuffer);
       clearInterval(interval);
+    },
+    measureSpan(name: string, elapsedTime?: number) {
+      const currentTime = Date.now();
+
+      if (elapsedTime) {
+        addSpan(name, currentTime - elapsedTime, currentTime);
+
+        return {
+          name,
+          end() {},
+        };
+      }
+
+      let closed = false;
+
+      return {
+        name,
+        end() {
+          if (closed) {
+            throw new Error("Span already closed");
+          }
+          closed = true;
+          addSpan(name, currentTime, Date.now());
+        },
+      };
     },
   };
 }
 
-async function initializeElasticSearch(client: ESClient, index: string) {
-  const properties = {
+async function initializeElasticSearch(
+  client: ESClient,
+  logsIndex: string,
+  spansIndex: string,
+) {
+  const commonProperties = {
     hostname: {
       type: "keyword",
     },
-    level: {
+    module: {
       type: "keyword",
-    },
-    message: {
-      type: "text",
     },
     timestamp: {
       type: "date",
     },
   } as const;
 
-  if (await client.indices.exists({ index })) {
+  await createOrUpdateIndex(client, logsIndex, {
+    ...commonProperties,
+    level: {
+      type: "keyword",
+    },
+    message: {
+      type: "text",
+    },
+  });
+
+  await createOrUpdateIndex(client, spansIndex, {
+    ...commonProperties,
+    name: {
+      type: "keyword",
+    },
+    startTime: {
+      type: "date",
+    },
+    endTime: {
+      type: "date",
+    },
+    elapsedTimeMillis: {
+      type: "long",
+    },
+  });
+}
+
+async function createOrUpdateIndex(
+  client: ESClient,
+  index: string,
+  properties: Record<PropertyName, MappingProperty>,
+) {
+  if (await client.indices.exists({ index: index })) {
     console.log(`Updating mappings for ElasticSearch "${index}" index`);
     await client.indices.putMapping({
       index,

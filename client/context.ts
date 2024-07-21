@@ -45,7 +45,7 @@ export function isCurrentPlayer(playerId: string) {
 
 export function isPlayerAlive() {
   const player = getCurrentPlayer();
-  return player && player.health > 0;
+  return player.health > 0;
 }
 
 export function isDebugMode(): boolean {
