@@ -4,12 +4,14 @@ HammerFight-like browser game.
 
 ## How to run
 
+> For cloud deployments, check [Cloud deployment](#cloud-deployment).
+
 The server will open on the configured port, and will also serve the frontend.
 
 ### Environment variables
 
-Check `.env.defaults` to see the available environment variables.
-You can copy it to `.env` and change the values there, or define the values directly.
+Check [server/env.ts](server/env.ts) to see the available environment variables.
+You can copy `.env.defaults` to `.env` and change the values there, as a starting point.
 
 ### With Node 20
 
@@ -26,6 +28,33 @@ Run with `docker compose up`.
 
 It will build the client and run the server at container start.
 You can modify it to build in a different layer, but you won't be able to change the environment variables dynamically that way.
+
+## Cloud deployment
+
+To deploy the project to the cloud, there's a terraform file at `terraform/`.
+
+> ⚠️ Cloud providers are not configurable. This is the current Hammerfight.io deployment.
+> If you have other needs, you may need to modify the terraform files, or do it manually.
+
+Current deployment includes:
+
+- Hetzner servers for the server
+- Cloudflare for the DNS A record and SSL certificates
+
+> 💡 You have to pre-configure multiple settings on your Hetzner and Cloudflare accounts, which are not explained here.
+> Knowledge of these suppliers is recommended.
+
+You can see the required variables at `terraform/variables.tf`.
+You can create a `terraform.tfvars` file with the variables values. Terraform will ask for them on `terraform apply` if you don't provide them.
+
+To deploy, run, in the `terraform/` directory:
+
+```sh
+terraform init
+terraform apply
+```
+
+Note that servers will have a short downtime, as they are destroyed and recreated.
 
 ## Client-Server logic
 

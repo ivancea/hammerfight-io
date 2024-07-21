@@ -6,14 +6,14 @@ resource "tls_cert_request" "tls_cert_request" {
   private_key_pem = tls_private_key.tls_cert_private_key.private_key_pem
 
   subject {
-    common_name  = "hammerfight.io"
+    common_name  = var.domain_name
     organization = "Hammerfight.io"
   }
 }
 
 resource "cloudflare_origin_ca_certificate" "tls_cert" {
   csr                = tls_cert_request.tls_cert_request.cert_request_pem
-  hostnames          = ["hammerfight.io"]
+  hostnames          = [var.domain_name]
   request_type       = "origin-rsa"
   requested_validity = 90
 }
