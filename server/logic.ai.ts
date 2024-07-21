@@ -1,6 +1,6 @@
-import { hashCode } from "../client/utils";
 import { AI_CONTEXT_SYMBOL, Player } from "../common/types/player";
 import { Room } from "../common/types/room";
+import { hashCode } from "../common/utils";
 import {
   add,
   magnitude,
@@ -20,7 +20,7 @@ const botMessages = [
   "Isn't it bedtime for you?",
 ];
 
-export function updateBots(room: Room, elapsedTime: number) {
+export function updateBots(room: Room) {
   const firstPlayer = Object.values(room.players).find((p) => !p.isBot);
 
   for (const bot of Object.values(room.players).filter((p) => p.isBot)) {

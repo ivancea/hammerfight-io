@@ -15,6 +15,7 @@ import {
 } from "../common/types/socket-io";
 import { joinUrl } from "../common/urls";
 import { env } from "./env";
+import { getLogger } from "./logger";
 
 export type SocketData = never;
 
@@ -60,7 +61,7 @@ export const server = {
     app.use(joinUrl("/", basePath, "/"), express.static("build"));
 
     server.listen(port, () => {
-      console.log(
+      getLogger().info(
         `Server running at ${isHttps ? "https" : "http"}://localhost:${port}${joinUrl("/", basePath, "/")}`,
       );
     });

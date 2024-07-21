@@ -21,4 +21,39 @@ export default tseslint.config(
       "@typescript-eslint/no-dynamic-delete": "off",
     },
   },
+  {
+    // Server rules
+    files: ["server/**/*.ts"],
+    rules: {
+      "no-console": "error",
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["*/client/*"],
+              message: "Server code cannot use client code",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    // Client rules
+    files: ["client/**/*.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["*/server/*"],
+              message: "Client code cannot use server code",
+            },
+          ],
+        },
+      ],
+    },
+  },
 );

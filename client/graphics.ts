@@ -8,6 +8,7 @@ import { Text } from "two.js/src/text";
 import { assert } from "../common/errors";
 import { Player } from "../common/types/player";
 import { Room } from "../common/types/room";
+import { hashCode } from "../common/utils";
 import backgroundImage from "./assets/background.jpg";
 import {
   getContext,
@@ -21,7 +22,6 @@ import {
   removeFlailWeapon,
   updateFlailWeapon,
 } from "./graphics.weapons.flail";
-import { hashCode } from "./utils";
 
 let two: Two | undefined;
 let resizeObserver: ResizeObserver | undefined;

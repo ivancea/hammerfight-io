@@ -5,6 +5,7 @@ import { makePlayer, Player } from "../common/types/player";
 import { Room } from "../common/types/room";
 import { makeFlailWeapon } from "../common/types/weapon";
 import { divide } from "../common/vector";
+import { getLogger } from "./logger";
 import { updateBots } from "./logic.ai";
 import { server, Socket } from "./server";
 import {
@@ -57,7 +58,7 @@ export function disconnectPlayer(player: Player) {
 export function updateRoom(room: Room, elapsedTime: number) {
   const damages: Damage[] = [];
 
-  updateBots(room, elapsedTime);
+  updateBots(room);
   applyPhysics(room, elapsedTime, (damage) => damages.push(damage));
 
   const deadPlayerIds = new Set<string>();
@@ -88,7 +89,7 @@ export function updateRoom(room: Room, elapsedTime: number) {
 
   if (!Object.values(room.players).some((p) => !p.isBot)) {
     delete world.rooms[room.id];
-    console.log(`Deleted empty room ${room.id}`);
+    getLogger().info(`Deleted empty room ${room.id}`);
   }
 
   server.broadcastRoom(room).emit("roomUpdated", { room });
