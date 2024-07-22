@@ -1,5 +1,8 @@
 {
   "name": "hammerfightio",
+  "author": "Iván Cea FOntenla",
+  "license": "UNLICENSED",
+  "description": "Monorepo for the Hammerfight.io game",
   "version": "1.0.0",
   "type": "module",
   "main": "index.js",
@@ -14,9 +17,16 @@
     "lint-fix": "eslint . --fix",
     "check": "tsc --noEmit && npx webpack configtest && npm run lint && npm run circular-dependencies"
   },
-  "author": "",
-  "license": "ISC",
-  "description": "",
+  "dependencies": {
+    "@elastic/elasticsearch": "^8.14.0",
+    "compression": "^1.7.4",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "socket.io": "^4.7.5",
+    "socket.io-client": "^4.7.5",
+    "two.js": "^0.8.14",
+    "zod": "^3.23.8"
+  },
   "devDependencies": {
     "@eslint/compat": "^1.1.0",
     "@eslint/js": "^9.6.0",
@@ -43,15 +53,5 @@
     "val-loader": "^6.0.0",
     "webpack": "^5.92.1",
     "webpack-cli": "^5.1.4"
-  },
-  "dependencies": {
-    "@elastic/elasticsearch": "^8.14.0",
-    "compression": "^1.7.4",
-    "dotenv": "^16.4.5",
-    "express": "^4.19.2",
-    "socket.io": "^4.7.5",
-    "socket.io-client": "^4.7.5",
-    "two.js": "^0.8.14",
-    "zod": "^3.23.8"
   }
 }
