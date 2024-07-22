@@ -9,6 +9,8 @@ The multiplayer system is similar to the one in [Agar.io](https://agar.io/), whe
 
 The name and domain, `Hammerfight.io`, is a homage to both games.
 
+> 👀 Want to contribute? Check [the contribution guidelines](./CONTRIBUTING.md)
+
 ## How to run
 
 > For cloud deployments, check [Cloud deployment](#cloud-deployment).
