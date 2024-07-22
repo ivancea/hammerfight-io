@@ -1,0 +1,1 @@
+import { Client as ESClient } from "@elastic/elasticsearch";

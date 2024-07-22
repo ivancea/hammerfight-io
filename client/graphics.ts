@@ -68,14 +68,31 @@ export function initializeGraphics() {
   backgroundRect.id = "background";
   backgroundRect.fill = backgroundTexture;
 
+  const roomIdText = two.makeText(
+    `Room ID: ${context.room.id}`,
+    60, // X position
+    20 // Y position
+  );
+  roomIdText.size = 24;
+  roomIdText.weight = 700;
+  roomIdText.fill = "#FFFFFF"; // Set the text color to white
+
+  two.add(roomIdText); // Add the room ID text to the scene
+
   for (const player of Object.values(context.room.players)) {
     internalAddPlayer(player);
   }
-
+  
   centerPlayer();
-
+  
   two.play();
-
+  
+  navigator.clipboard.writeText(context.room.id.toString()).then(() => {
+    console.log('Room ID copied to clipboard:', context.room.id);
+  }).catch(err => {
+    console.error('Failed to copy room ID to clipboard:', err);
+  });
+  
   return getDomElement();
 }
 
