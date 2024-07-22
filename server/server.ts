@@ -72,9 +72,9 @@ export const server = {
     return io;
   },
 
-  addToRoom(socket: Socket, room: Room) {
+  async addToRoom(socket: Socket, room: Room) {
     assert(io, "Socket.IO server not initialized");
-    socket.join(`room:${room.id}`);
+    await socket.join(`room:${room.id}`);
   },
   broadcastRoom(room: Room) {
     assert(io, "Socket.IO server not initialized");

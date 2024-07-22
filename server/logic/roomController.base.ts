@@ -13,15 +13,15 @@ import { updateBots } from "./logic.ai";
 export type RoomController = {
   room: Room;
 
-  joinPlayer(socket: Socket, username: string): Player;
+  joinPlayer(socket: Socket, username: string): Promise<Player>;
   disconnectPlayer(player: Player): void;
   updateRoom(elapsedTime: number): void;
   destroy(): void;
 };
 
 export function makeBaseRoomController(room: Room): RoomController {
-  function joinPlayer(socket: Socket, username: string) {
-    server.addToRoom(socket, room);
+  async function joinPlayer(socket: Socket, username: string) {
+    await server.addToRoom(socket, room);
 
     const playerPosition = divide(room.size, 2); // TODO: Find an empty position
     const player = makePlayer(

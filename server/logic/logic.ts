@@ -10,7 +10,7 @@ import { makeNormalRoom } from "./roomController.normal";
 
 const roomControllers: Record<number, RoomController> = {};
 
-export function joinPlayer(
+export async function joinPlayer(
   socket: Socket,
   username: string,
   roomWithBots: boolean,
@@ -21,7 +21,7 @@ export function joinPlayer(
   const roomController = roomControllers[room.id];
   assert(roomController, "Room controller not found");
 
-  const player = roomController.joinPlayer(socket, username);
+  const player = await roomController.joinPlayer(socket, username);
 
   return {
     room,

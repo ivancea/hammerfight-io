@@ -23,8 +23,8 @@ async function startServer() {
       }
     });
 
-    socket.on("requestJoin", (event, callback) => {
-      const { room, player } = joinPlayer(
+    socket.on("requestJoin", async (event, callback) => {
+      const { room, player } = await joinPlayer(
         socket,
         event.username,
         event.roomWithBots,
@@ -58,17 +58,19 @@ async function startServer() {
     });
   });
 
-  setInterval(async () => {
-    for (const socket of await server.io.fetchSockets()) {
-      if (!getPlayer(socket)) {
-        getLogger().info(`Removed dangling socket ${socket.id}`);
+  setInterval(() => {
+    void (async () => {
+      for (const socket of await server.io.fetchSockets()) {
+        if (!getPlayer(socket)) {
+          getLogger().info(`Removed dangling socket ${socket.id}`);
 
-        socket.disconnect();
+          socket.disconnect();
+        }
       }
-    }
+    })();
   }, 10_000);
 }
 
-startServer().catch((error) => {
-  getLogger().error(`Failed to start server: ${error}`);
+startServer().catch((error: unknown) => {
+  getLogger().error(`Failed to start server: ${JSON.stringify(error)}`);
 });
