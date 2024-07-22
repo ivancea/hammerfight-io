@@ -14,6 +14,10 @@ To avoid conflicts in this stage, and to avoid frustration or wasting time:
 - Wait for review. I'll usually get notified and check it in between a day and a week
 - After iterating and solving comments, it will be manually merged by a collaborator
 
+> ❗ The app and branch is expected to have been launched, and the feature, manually tested.
+> <br/>❗ Opening a PR that doesn't work may be considered spam, and flagged as such.
+> <br/><br/> 🕒 We are all human, and we all make mistakes. This is just a reminder to avoid opening low-effort PRs that waste collaborators time.
+
 ## How to report a bug
 The short answer is: You don't! Unless it's some kind of uncaught exception you found in there.
 In which case feel free to open an issue, and tag it with the "bug" label, with the full stack trace, an explanation of what happen and, if possible, a reproduction method. 
