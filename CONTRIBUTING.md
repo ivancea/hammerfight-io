@@ -18,6 +18,12 @@ To avoid conflicts in this stage, and to avoid frustration or wasting time:
 > <br/>❗ Opening a PR that doesn't work may be considered spam, and flagged as such.
 > <br/><br/> 🕒 We are all human, and we all make mistakes. This is just a reminder to avoid opening low-effort PRs that waste collaborators time.
 
+### Understanding issues: Labels
+There are some sets of labels you will see in the issues, usually one of each:
+- `:<component>`: Labels that define which components are mainly related with the issue
+- `!<work-status>`: Labels that define whether the issue can be assigned, if it's not ready yet, if it's a private issue, etc
+- `<other>`: Labels that define the kind of issue (bug, enhancement...). There may be other unrelated topics too
+
 ## How to report a bug
 The short answer is: You don't! Unless it's some kind of uncaught exception you found in there.
 In which case feel free to open an issue, and tag it with the "bug" label, with the full stack trace, an explanation of what happen and, if possible, a reproduction method. 
