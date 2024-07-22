@@ -3,7 +3,7 @@ name: "Terraform"
 on:
   workflow_dispatch:
   push:
-    branches: ["cloud"]
+    branches: ["master"]
 
 permissions:
   contents: read
@@ -35,7 +35,6 @@ jobs:
         run: terraform fmt -check
 
       - name: Terraform Apply
-        if: github.ref == 'refs/heads/cloud'
         env:
           TF_VAR_hcloud_token: ${{ secrets.TF_VAR_HCLOUD_TOKEN }}
           TF_VAR_cloudflare_api_token: ${{ secrets.TF_VAR_CLOUDFLARE_API_TOKEN }}
