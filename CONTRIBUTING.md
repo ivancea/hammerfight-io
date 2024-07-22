@@ -21,7 +21,8 @@ To avoid conflicts in this stage, and to avoid frustration or wasting time:
 ### Understanding issues: Labels
 There are some sets of labels you will see in the issues, usually one of each:
 - `:<component>`: Labels that define which components are mainly related with the issue
-- `!<work-status>`: Labels that define whether the issue can be assigned, if it's not ready yet, if it's a private issue, etc
+- `!<work-status>`: Labels that define whether the issue can be assigned, if it's not ready yet, if it's a private issue, etc.
+  <br/>If an issue lacks this label, use your best judgement. It may have been forgotten, or it may be too convoluted to define.
 - `<other>`: Labels that define the kind of issue (bug, enhancement...). There may be other unrelated topics too
 
 ## How to report a bug
