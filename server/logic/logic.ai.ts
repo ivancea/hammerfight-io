@@ -64,17 +64,21 @@ export function updateBots(room: Room) {
       if (accelerationAgainstBots.x !== 0 || accelerationAgainstBots.y !== 0) {
         accelerationAgainstBots = withMagnitude(
           accelerationAgainstBots,
-          room.maxPlayerAcceleration / 1.5,
+          room.maxPlayerAcceleration,
         );
       }
 
-      const vectorToPlayer = withMagnitude(
-        subtract(firstPlayer.position, bot.position),
-        room.maxPlayerAcceleration / 1.5,
+      const vectorToPlayer = subtract(firstPlayer.position, bot.position);
+
+      const accelerationToPlayer = withMagnitude(
+        vectorToPlayer,
+        magnitude(vectorToPlayer) > 300
+          ? room.maxPlayerAcceleration * 20
+          : room.maxPlayerAcceleration / 1.5,
       );
 
       newAcceleration = withMagnitude(
-        add(newAcceleration, vectorToPlayer, accelerationAgainstBots),
+        add(newAcceleration, accelerationToPlayer, accelerationAgainstBots),
         room.maxPlayerAcceleration,
       );
     }
