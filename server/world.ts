@@ -82,17 +82,28 @@ function createRoom(roomWithBots: boolean): Room {
   world.rooms[room.id] = room;
 
   let lastUpdateTime = Date.now() / 1000;
+  const roomMillisecondsBetweenIntervalsStats = getLogger().stats(
+    "room milliseconds between intervals",
+    500,
+  );
+  const roomUpdateMillisecondsDelayStats = getLogger().stats(
+    "room update milliseconds delay",
+    500,
+  );
 
   const intervalId = setInterval(() => {
     if (!world.rooms[room.id]) {
       clearInterval(intervalId);
     } else {
-      const newUpdateTime = Date.now() / 1000;
+      const now = Date.now();
+      const newUpdateTime = now / 1000;
       const elapsedTime = newUpdateTime - lastUpdateTime;
-      getLogger().measureSpan("room interval", elapsedTime * 1000);
-      const updateRoomSpan = getLogger().measureSpan("updateRoom");
+
+      roomMillisecondsBetweenIntervalsStats.add(elapsedTime * 1000);
+
       updateRoom(room, elapsedTime);
-      updateRoomSpan.end();
+
+      roomUpdateMillisecondsDelayStats.add(Date.now() - now);
       lastUpdateTime = newUpdateTime;
     }
   }, 15);

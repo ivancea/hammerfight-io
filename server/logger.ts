@@ -13,12 +13,26 @@ type Logger = {
   info(message: string): void;
   warn(message: string): void;
   error(message: string): void;
+  /**
+   * Measures a span of time, and logs it when it ends.
+   */
   measureSpan(name: string, elapsedTime?: number): SpanMetrics;
+  /**
+   * Accumulates metrics, and flushes them as metrics: Average, max, min, count...
+   *
+   * The returned object should be reused.
+   */
+  stats(name: string, entriesPerFlush: number): StatsMetrics;
 };
 
 type SpanMetrics = {
   name: string;
   end: () => void;
+};
+
+type StatsMetrics = {
+  name: string;
+  add(value: number): void;
 };
 
 type InternalLogger = Logger & {
@@ -79,6 +93,16 @@ function makeConsoleLogger(otherLogger?: InternalLogger): InternalLogger {
         }
       );
     },
+    stats(name: string, entriesPerFlush: number) {
+      return (
+        otherLogger?.stats(name, entriesPerFlush) ?? {
+          name,
+          add() {
+            // No-op for console logger
+          },
+        }
+      );
+    },
   };
 }
 
@@ -98,12 +122,14 @@ async function makeElasticSearchLogger(
   const hostname = os.hostname();
   const logsIndex = `${indexNamespace}_logs`;
   const spansIndex = `${indexNamespace}_spans`;
+  const statsIndex = `${indexNamespace}_stats`;
   const bufferLimit = 1000;
 
   const logsBuffer: Record<string, unknown>[] = [];
   const spansBuffer: Record<string, unknown>[] = [];
+  const statsBuffer: Record<string, unknown>[] = [];
 
-  await initializeElasticSearch(client, logsIndex, spansIndex);
+  await initializeElasticSearch(client, logsIndex, spansIndex, statsIndex);
 
   function flush(index: string, buffer: Record<string, unknown>[]) {
     if (buffer.length === 0) {
@@ -127,6 +153,19 @@ async function makeElasticSearchLogger(
     buffer.length = 0;
   }
 
+  function flushLogs() {
+    flush(logsIndex, logsBuffer);
+  }
+
+  function flushSpans() {
+    // Spans add too many records. Ignoring them for now
+    // flush(spansIndex, spansBuffer);
+  }
+
+  function flushStats() {
+    flush(statsIndex, statsBuffer);
+  }
+
   function addLog(level: "info" | "warn" | "error", message: string) {
     logsBuffer.push({
       hostname,
@@ -137,7 +176,7 @@ async function makeElasticSearchLogger(
     });
 
     if (logsBuffer.length >= bufferLimit) {
-      flush(logsIndex, logsBuffer);
+      flushLogs();
     }
   }
 
@@ -153,13 +192,37 @@ async function makeElasticSearchLogger(
     });
 
     if (spansBuffer.length >= bufferLimit) {
-      flush(spansIndex, spansBuffer);
+      flushSpans();
+    }
+  }
+
+  function addStats(
+    name: string,
+    avg: number,
+    max: number,
+    min: number,
+    count: number,
+  ) {
+    statsBuffer.push({
+      hostname,
+      module: LOGGER_MODULE,
+      timestamp: Date.now(),
+      name,
+      avg,
+      max,
+      min,
+      count,
+    });
+
+    if (statsBuffer.length >= bufferLimit) {
+      flushStats();
     }
   }
 
   const interval = setInterval(() => {
-    flush(logsIndex, logsBuffer);
-    flush(spansIndex, spansBuffer);
+    flushLogs();
+    flushSpans();
+    flushStats();
   }, 5000);
 
   return {
@@ -173,8 +236,9 @@ async function makeElasticSearchLogger(
       addLog("error", message);
     },
     destroy() {
-      flush(logsIndex, logsBuffer);
-      flush(spansIndex, spansBuffer);
+      flushLogs();
+      flushSpans();
+      flushStats();
       clearInterval(interval);
     },
     measureSpan(name: string, elapsedTime?: number) {
@@ -202,6 +266,23 @@ async function makeElasticSearchLogger(
         },
       };
     },
+    stats(name: string, entriesPerFlush: number) {
+      const metrics: number[] = [];
+      return {
+        name,
+        add(value: number) {
+          metrics.push(value);
+
+          if (metrics.length >= entriesPerFlush) {
+            const sum = metrics.reduce((a, b) => a + b, 0);
+            const max = Math.max(...metrics);
+            const min = Math.min(...metrics);
+            addStats(name, sum / metrics.length, max, min, metrics.length);
+            metrics.length = 0;
+          }
+        },
+      };
+    },
   };
 }
 
@@ -209,6 +290,7 @@ async function initializeElasticSearch(
   client: ESClient,
   logsIndex: string,
   spansIndex: string,
+  statsIndex: string,
 ) {
   const commonProperties = {
     hostname: {
@@ -245,6 +327,25 @@ async function initializeElasticSearch(
     },
     elapsedTimeMillis: {
       type: "long",
+    },
+  });
+
+  await createOrUpdateIndex(client, statsIndex, {
+    ...commonProperties,
+    name: {
+      type: "keyword",
+    },
+    avg: {
+      type: "double",
+    },
+    max: {
+      type: "double",
+    },
+    min: {
+      type: "double",
+    },
+    count: {
+      type: "integer",
     },
   });
 }
