@@ -201,6 +201,13 @@ function internalUpdatePlayer(player: Player) {
 function internalAddPlayer(player: Player) {
   assert(two, "Game not initialized");
 
+  const context = getContext();
+  const spawnPosition = findEmptyZone(context.room);
+
+  // Update player position with the empty zone position
+  player.position.x = spawnPosition.x;
+  player.position.y = spawnPosition.y;
+
   const playerBody = two.makeCircle(0, 0, SHIP_IMAGE_SIZE / 2);
   playerBody.id = playerBodyId(player);
   playerBody.scale = (player.radius * 2) / SHIP_IMAGE_SIZE;
@@ -360,4 +367,11 @@ function playerHealthHealthId(player: Player) {
 
 function playerVelocityId(player: Player) {
   return `player__velocity__${player.id}`;
+}
+
+function findEmptyZone(room: Room): { x: number, y: number } {
+return {
+      x: Math.random() * room.size.x,
+      y: Math.random() * room.size.y,
+    };
 }
