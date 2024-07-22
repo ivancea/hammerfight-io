@@ -1,7 +1,7 @@
 import { clampMagnitude } from "../common/vector";
 import { env } from "./env";
 import { getLogger, initializeLogger } from "./logger";
-import { disconnectPlayer, joinPlayer } from "./logic";
+import { disconnectPlayer, joinPlayer } from "./logic/logic";
 import { server } from "./server";
 import { getPlayer, getRoom } from "./world";
 

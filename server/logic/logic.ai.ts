@@ -1,13 +1,13 @@
-import { AI_CONTEXT_SYMBOL, Player } from "../common/types/player";
-import { Room } from "../common/types/room";
-import { hashCode } from "../common/utils";
+import { AI_CONTEXT_SYMBOL, Player } from "../../common/types/player";
+import { Room } from "../../common/types/room";
+import { hashCode } from "../../common/utils";
 import {
   add,
   magnitude,
   rotate,
   subtract,
   withMagnitude,
-} from "../common/vector";
+} from "../../common/vector";
 
 const botMessages = [
   "Come here <PLAYER_NAME>!",
