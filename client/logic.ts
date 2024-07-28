@@ -17,9 +17,11 @@ import {
   updatePlayer,
   updateRoom,
 } from "./graphics";
-import { makeAbsoluteMouseInput } from "./input/absoluteMouseInput";
-import { InputHandler } from "./input/inputHandler";
-import { makeRelativeMouseInput } from "./input/relativeMouseInput";
+import { InputHandler } from "./input/input-handler";
+import {
+  InputHandlerId,
+  makeInputHandler,
+} from "./input/input-handler-catalog";
 
 let inputHandler: InputHandler | undefined;
 
@@ -27,7 +29,7 @@ export function initializeGame(
   socket: Socket,
   room: Room,
   player: Player,
-  inputMode: string,
+  inputHandlerId: InputHandlerId,
   debugMode: boolean,
 ) {
   const context = {
@@ -41,24 +43,12 @@ export function initializeGame(
 
   const htmlElement = initializeGraphics();
 
-  switch (inputMode) {
-    case "RelativeMouse":
-      inputHandler = makeRelativeMouseInput(
-        context,
-        htmlElement,
-        updateAcceleration,
-      );
-      break;
-
-    case "AbsoluteMouse":
-    default:
-      inputHandler = makeAbsoluteMouseInput(
-        context,
-        htmlElement,
-        updateAcceleration,
-      );
-      break;
-  }
+  inputHandler = makeInputHandler(
+    inputHandlerId,
+    context,
+    htmlElement,
+    updateAcceleration,
+  );
 }
 
 export function stopGame() {

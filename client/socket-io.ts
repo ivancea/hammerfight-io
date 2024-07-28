@@ -6,6 +6,7 @@ import type {
 } from "../common/types/socket-io";
 import { joinUrl } from "../common/urls";
 import { env } from "./env";
+import { InputHandlerId } from "./input/input-handler-catalog";
 import {
   initializeGame,
   playerDied,
@@ -22,7 +23,7 @@ let socket:
 
 export function joinRoom(
   username: string,
-  inputMode: string,
+  inputHandlerId: InputHandlerId,
   roomWithBots: boolean,
   debugMode: boolean,
 ) {
@@ -72,6 +73,6 @@ export function joinRoom(
     assert(socket, "Socket should be defined");
     console.log(`Joined room ${room.id} as player ${player.id}`, room);
 
-    initializeGame(socket, room, player, inputMode, debugMode);
+    initializeGame(socket, room, player, inputHandlerId, debugMode);
   });
 }

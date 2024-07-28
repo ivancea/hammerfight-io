@@ -1,7 +1,7 @@
 import { assert } from "../../common/errors";
-import { magnitude, Vector, withMagnitude } from "../../common/vector";
+import { interpolateMagnitude, magnitude, Vector } from "../../common/vector";
 import { Context, getContext } from "../context";
-import { InputHandler } from "./inputHandler";
+import { InputHandler } from "./input-handler";
 
 /**
  * Input handler that locks the mouse to the element, and tracks its movement.
@@ -14,14 +14,13 @@ export function makeRelativeMouseInput(
   updateAcceleration: (newAcceleration: Vector) => void,
 ): InputHandler {
   /**
+   * A simple "weighted moving average" to smooth out the mouse movement.
    *
+   * Useful to avoid changing the direction after a minimal mouse movement or vibration.
    */
   const accumulatedMovement: Vector = { x: 0, y: 0 };
 
-  const updateMovement = (
-    mouseMovement: Vector,
-    updateAcceleration: (newAcceleration: Vector) => void,
-  ) => {
+  const updateMovement = (mouseMovement: Vector) => {
     accumulatedMovement.x = mouseMovement.x + accumulatedMovement.x * 0.5;
     accumulatedMovement.y = mouseMovement.y + accumulatedMovement.y * 0.5;
 
@@ -32,13 +31,12 @@ export function makeRelativeMouseInput(
 
     const sensitivity = 5;
 
-    const magnitudePercent = magnitude(accumulatedMovement) / sensitivity;
-
-    const maxPlayerAcceleration = getContext().room.maxPlayerAcceleration;
-
-    const acceleration = withMagnitude(
+    const acceleration = interpolateMagnitude(
       accumulatedMovement,
-      Math.min(maxPlayerAcceleration, maxPlayerAcceleration * magnitudePercent),
+      0,
+      sensitivity,
+      0,
+      getContext().room.maxPlayerAcceleration,
     );
 
     updateAcceleration(acceleration);
@@ -52,7 +50,7 @@ export function makeRelativeMouseInput(
       y: event.movementY,
     };
 
-    updateMovement(mouseMovement, updateAcceleration);
+    updateMovement(mouseMovement);
   };
 
   element.addEventListener("mousemove", onMouseMove);
@@ -64,7 +62,7 @@ export function makeRelativeMouseInput(
   const interval = setInterval(() => {
     assert(context === getContext(), "Context changed");
 
-    updateMovement({ x: 0, y: 0 }, updateAcceleration);
+    updateMovement({ x: 0, y: 0 });
   }, 50);
 
   return {

@@ -1,13 +1,8 @@
 import { assert } from "../../common/errors";
-import {
-  magnitude,
-  subtract,
-  Vector,
-  withMagnitude,
-} from "../../common/vector";
+import { interpolateMagnitude, subtract, Vector } from "../../common/vector";
 import { Context, getContext } from "../context";
 import { getScreenPlayerPosition, getScreenSize } from "../graphics";
-import { InputHandler } from "./inputHandler";
+import { InputHandler } from "./input-handler";
 
 /**
  * Input handler that tracks the position of the mouse within the game view.
@@ -27,13 +22,12 @@ export function makeAbsoluteMouseInput(
 
     const baseSize = Math.min(screenSize.x, screenSize.y) * 0.1;
 
-    const magnitudePercent = magnitude(delta) / baseSize;
-
-    const maxPlayerAcceleration = getContext().room.maxPlayerAcceleration;
-
-    const acceleration = withMagnitude(
+    const acceleration = interpolateMagnitude(
       delta,
-      Math.min(maxPlayerAcceleration, maxPlayerAcceleration * magnitudePercent),
+      0,
+      baseSize,
+      0,
+      getContext().room.maxPlayerAcceleration,
     );
 
     updateAcceleration(acceleration);

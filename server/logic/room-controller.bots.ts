@@ -2,7 +2,7 @@ import { makeBot } from "../../common/types/player";
 import { makeRoom } from "../../common/types/room";
 import { makeFlailWeapon } from "../../common/types/weapon";
 import { world } from "../world";
-import { makeBaseRoomController } from "./roomController.base";
+import { makeBaseRoomController } from "./room-controller.base";
 
 export function makeBotsRoom() {
   const room = makeRoom(world.nextRoomId++);

@@ -55,6 +55,33 @@ export function withMagnitude(vector: Vector, newMagnitude: number) {
   };
 }
 
+export function interpolateMagnitude(
+  vector: Vector,
+  minSourceMagnitude: number,
+  maxSourceMagnitude: number,
+  minTargetMagnitude: number,
+  maxTargetMagnitude: number,
+) {
+  const vectorMagnitude = magnitude(vector);
+
+  if (vectorMagnitude >= maxSourceMagnitude) {
+    return withMagnitude(vector, maxTargetMagnitude);
+  }
+  if (vectorMagnitude <= minSourceMagnitude) {
+    return withMagnitude(vector, minTargetMagnitude);
+  }
+
+  const sourceMagnitudeRange = maxSourceMagnitude - minSourceMagnitude;
+  const targetMagnitudeRange = maxTargetMagnitude - minTargetMagnitude;
+  const magnitudePercent =
+    (vectorMagnitude - minSourceMagnitude) / sourceMagnitudeRange;
+
+  return withMagnitude(
+    vector,
+    minTargetMagnitude + targetMagnitudeRange * magnitudePercent,
+  );
+}
+
 export function clampMagnitude(vector: Vector, maxMagnitude: number) {
   const vectorMagnitude = magnitude(vector);
 

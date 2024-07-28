@@ -24,7 +24,7 @@ export default (env) => {
       ) * 1000,
     );
 
-    appVersion = `${gitCommit} - ${commitDate.toISOString()}`;
+    appVersion = `dev-${gitCommit.slice(0, 7)} - ${commitDate.toISOString()}`;
   }
 
   return {

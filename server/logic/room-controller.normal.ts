@@ -1,6 +1,6 @@
 import { makeRoom } from "../../common/types/room";
 import { world } from "../world";
-import { makeBaseRoomController } from "./roomController.base";
+import { makeBaseRoomController } from "./room-controller.base";
 
 export function makeNormalRoom() {
   const room = makeRoom(world.nextRoomId++);

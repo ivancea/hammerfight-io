@@ -4,9 +4,9 @@ import { Room } from "../../common/types/room";
 import { getLogger } from "../logger";
 import { Socket } from "../server";
 import { getRoom, world } from "../world";
-import { RoomController } from "./roomController.base";
-import { makeBotsRoom } from "./roomController.bots";
-import { makeNormalRoom } from "./roomController.normal";
+import { RoomController } from "./room-controller.base";
+import { makeBotsRoom } from "./room-controller.bots";
+import { makeNormalRoom } from "./room-controller.normal";
 
 const roomControllers: Record<number, RoomController> = {};
 
