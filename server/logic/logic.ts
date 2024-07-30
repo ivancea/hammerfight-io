@@ -5,8 +5,8 @@ import { getLogger } from "../logger";
 import { Socket } from "../server";
 import { getRoom, world } from "../world";
 import { RoomController } from "./room-controller.base";
-import { makeBotsRoom } from "./room-controller.bots";
-import { makeNormalRoom } from "./room-controller.normal";
+import { BotsRoom } from "./room-controller.bots";
+import { NormalRoom } from "./room-controller.normal";
 
 const roomControllers: Record<number, RoomController> = {};
 
@@ -58,6 +58,11 @@ export function findOrCreateRoomWithSpace(roomWithBots: boolean): Room {
 
   world.rooms[newRoom.id] = newRoom;
 
+  assert(
+    Object.keys(newRoom.players).length < newRoom.maxPlayers,
+    "Room was created full",
+  );
+
   return newRoom;
 }
 
@@ -65,7 +70,8 @@ export function findOrCreateRoomWithSpace(roomWithBots: boolean): Room {
  * Creates a new room. Starts the room physics loop.
  */
 function createRoom(roomWithBots: boolean): Room {
-  const { room, controller } = roomWithBots ? makeBotsRoom() : makeNormalRoom();
+  const controller = roomWithBots ? new BotsRoom() : new NormalRoom();
+  const room = controller.room;
 
   world.rooms[room.id] = room;
   roomControllers[room.id] = controller;

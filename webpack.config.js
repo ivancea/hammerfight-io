@@ -11,7 +11,7 @@ const __dirname = path.dirname(__filename);
 export default (env) => {
   let appVersion;
 
-  if (env.APP_VERSION) {
+  if (env?.APP_VERSION) {
     appVersion = env.APP_VERSION;
   } else {
     const gitCommit = childProcess.execSync("git rev-parse HEAD").toString();

@@ -57,17 +57,3 @@ export type Room = {
    */
   maxPlayerAcceleration: number;
 };
-
-export function makeRoom(roomId: number): Room {
-  const roomSize = { x: 2000, y: 2000 };
-
-  return {
-    id: roomId,
-    maxPlayers: 5,
-    players: {},
-    size: roomSize,
-    gravity: { x: 0, y: 200 },
-    maxPlayerSpeed: 500,
-    maxPlayerAcceleration: 400,
-  };
-}

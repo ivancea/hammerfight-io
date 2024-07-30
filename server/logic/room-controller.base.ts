@@ -19,14 +19,28 @@ export type RoomController = {
   destroy(): void;
 };
 
-export function makeBaseRoomController(room: Room): RoomController {
-  async function joinPlayer(socket: Socket, username: string) {
-    await server.addToRoom(socket, room);
+export class BaseRoomController implements RoomController {
+  static makeRoom(roomId: number): Room {
+    return {
+      id: roomId,
+      maxPlayers: 5,
+      players: {},
+      size: { x: 2000, y: 2000 },
+      gravity: { x: 0, y: 200 },
+      maxPlayerSpeed: 500,
+      maxPlayerAcceleration: 400,
+    };
+  }
 
-    const playerPosition = divide(room.size, 2); // TODO: Find an empty position
+  constructor(public room: Room) {}
+
+  async joinPlayer(socket: Socket, username: string) {
+    await server.addToRoom(socket, this.room);
+
+    const playerPosition = divide(this.room.size, 2); // TODO: Find an empty position
     const player = makePlayer(
       socket.id,
-      room.id,
+      this.room.id,
       username,
       playerPosition,
       makeFlailWeapon(playerPosition),
@@ -34,12 +48,12 @@ export function makeBaseRoomController(room: Room): RoomController {
 
     socketsById[socket.id] = socket;
     playersById[socket.id] = player;
-    room.players[socket.id] = player;
+    this.room.players[socket.id] = player;
 
     return player;
   }
 
-  function disconnectPlayer(player: Player) {
+  disconnectPlayer(player: Player) {
     const room = getRoom(player);
 
     socketsById[player.id]?.disconnect();
@@ -51,22 +65,22 @@ export function makeBaseRoomController(room: Room): RoomController {
     server.broadcastRoom(room).emit("playerLeft", { player });
   }
 
-  function updateRoom(elapsedTime: number) {
+  updateRoom(elapsedTime: number) {
     const damages: Damage[] = [];
 
     const updateBotsSpan = getLogger().measureSpan("updateBots");
-    updateBots(room);
+    updateBots(this.room);
     updateBotsSpan.end();
 
     const applyPhysicsSpan = getLogger().measureSpan("applyPhysics");
-    applyPhysics(room, elapsedTime, (damage) => damages.push(damage));
+    applyPhysics(this.room, elapsedTime, (damage) => damages.push(damage));
     applyPhysicsSpan.end();
 
     const deadPlayerIds = new Set<string>();
 
     // Apply damages
     for (const damage of damages) {
-      const damagedPlayer = room.players[damage.damagedPlayerId];
+      const damagedPlayer = this.room.players[damage.damagedPlayerId];
       assert(damagedPlayer, "Damaged player not found");
 
       // TODO: Ignore damage if damaged by same source in the last N milliseconds
@@ -80,27 +94,23 @@ export function makeBaseRoomController(room: Room): RoomController {
 
     // Remove dead players
     for (const deadPlayerId of deadPlayerIds) {
-      const deadPlayer = room.players[deadPlayerId];
+      const deadPlayer = this.room.players[deadPlayerId];
       assert(deadPlayer, "Damaged player not found");
 
-      server.broadcastRoom(room).emit("playerDied", { player: deadPlayer });
+      server
+        .broadcastRoom(this.room)
+        .emit("playerDied", { player: deadPlayer });
 
-      disconnectPlayer(deadPlayer);
+      this.disconnectPlayer(deadPlayer);
     }
 
-    if (!Object.values(room.players).some((p) => !p.isBot)) {
-      delete world.rooms[room.id];
-      getLogger().info(`Deleted empty room ${room.id}`);
+    if (!Object.values(this.room.players).some((p) => !p.isBot)) {
+      delete world.rooms[this.room.id];
+      getLogger().info(`Deleted empty room ${this.room.id}`);
     }
 
-    server.broadcastRoom(room).emit("roomUpdated", { room });
+    server.broadcastRoom(this.room).emit("roomUpdated", { room: this.room });
   }
 
-  return {
-    room,
-    joinPlayer,
-    disconnectPlayer,
-    updateRoom,
-    destroy() {},
-  };
+  destroy() {}
 }
