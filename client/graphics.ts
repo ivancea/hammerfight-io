@@ -31,7 +31,10 @@ export function initializeGraphics() {
   const element = document.getElementById("game");
   assert(element, "Could not find game element");
 
-  two = new Two().appendTo(element);
+  two = new Two({
+    type: Two.Types.canvas,
+    fitted: true,
+  }).appendTo(element);
 
   function resizeElement() {
     assert(two, "Game not initialized");
