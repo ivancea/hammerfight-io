@@ -15,7 +15,7 @@ import {
 } from "../common/types/socket-io";
 import { joinUrl } from "../common/urls";
 import { env } from "./env";
-import { getLogger } from "./logger";
+import { getLogger } from "./utils/logger";
 
 export type SocketData = never;
 

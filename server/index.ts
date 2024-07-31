@@ -1,8 +1,8 @@
 import { clampMagnitude } from "../common/vector";
 import { env } from "./env";
-import { getLogger, initializeLogger } from "./logger";
 import { disconnectPlayer, joinPlayer } from "./logic/logic";
 import { server } from "./server";
+import { getLogger, initializeLogger } from "./utils/logger";
 import { getPlayer, getRoom } from "./world";
 
 async function startServer() {

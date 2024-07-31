@@ -5,8 +5,8 @@ import { makePlayer, Player } from "../../common/types/player";
 import { Room } from "../../common/types/room";
 import { makeFlailWeapon } from "../../common/types/weapon";
 import { divide } from "../../common/vector";
-import { getLogger } from "../logger";
 import { server, Socket } from "../server";
+import { getLogger } from "../utils/logger";
 import { getRoom, playersById, socketsById, world } from "../world";
 import { updateBots } from "./logic.ai";
 
@@ -68,13 +68,13 @@ export class BaseRoomController implements RoomController {
   updateRoom(elapsedTime: number) {
     const damages: Damage[] = [];
 
-    const updateBotsSpan = getLogger().measureSpan("updateBots");
-    updateBots(this.room);
-    updateBotsSpan.end();
+    getLogger().statsFunction("updateBots", () => {
+      updateBots(this.room);
+    });
 
-    const applyPhysicsSpan = getLogger().measureSpan("applyPhysics");
-    applyPhysics(this.room, elapsedTime, (damage) => damages.push(damage));
-    applyPhysicsSpan.end();
+    getLogger().statsFunction("applyPhysics", () => {
+      applyPhysics(this.room, elapsedTime, (damage) => damages.push(damage));
+    });
 
     const deadPlayerIds = new Set<string>();
 

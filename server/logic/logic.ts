@@ -1,8 +1,9 @@
 import { assert } from "../../common/errors";
 import { Player } from "../../common/types/player";
 import { Room } from "../../common/types/room";
-import { getLogger } from "../logger";
 import { Socket } from "../server";
+import { getLogger } from "../utils/logger";
+import { StopWatch } from "../utils/stopwatch";
 import { getRoom, world } from "../world";
 import { RoomController } from "./room-controller.base";
 import { BotsRoom } from "./room-controller.bots";
@@ -76,30 +77,22 @@ function createRoom(roomWithBots: boolean): Room {
   world.rooms[room.id] = room;
   roomControllers[room.id] = controller;
 
-  let lastUpdateTime = Date.now() / 1000;
-  const roomMillisecondsBetweenIntervalsStats = getLogger().stats(
-    "room milliseconds between intervals",
-    500,
-  );
-  const roomUpdateMillisecondsDelayStats = getLogger().stats(
-    "room update milliseconds delay",
-    500,
-  );
+  const elapsedTimeStopWatch = new StopWatch();
 
   const intervalId = setInterval(() => {
     if (!world.rooms[room.id]) {
       clearInterval(intervalId);
     } else {
-      const now = Date.now();
-      const newUpdateTime = now / 1000;
-      const elapsedTime = newUpdateTime - lastUpdateTime;
+      const roomUpdateStopWatch = new StopWatch();
+      const elapsedTime = elapsedTimeStopWatch.next();
 
-      roomMillisecondsBetweenIntervalsStats.add(elapsedTime * 1000);
+      controller.updateRoom(elapsedTime / 1000);
 
-      controller.updateRoom(elapsedTime);
-
-      roomUpdateMillisecondsDelayStats.add(Date.now() - now);
-      lastUpdateTime = newUpdateTime;
+      getLogger().stats("room milliseconds between intervals", elapsedTime);
+      getLogger().stats(
+        "room update milliseconds delay",
+        roomUpdateStopWatch.next(),
+      );
     }
   }, 15);
 
