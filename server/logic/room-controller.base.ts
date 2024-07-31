@@ -68,13 +68,27 @@ export class BaseRoomController implements RoomController {
   updateRoom(elapsedTime: number) {
     const damages: Damage[] = [];
 
-    getLogger().statsFunction("updateBots", () => {
-      updateBots(this.room);
-    });
+    getLogger().statsFunction(
+      {
+        name: "update bots",
+        unit: "milliseconds",
+        extra: `room:${this.room.id}`,
+      },
+      () => {
+        updateBots(this.room);
+      },
+    );
 
-    getLogger().statsFunction("applyPhysics", () => {
-      applyPhysics(this.room, elapsedTime, (damage) => damages.push(damage));
-    });
+    getLogger().statsFunction(
+      {
+        name: "apply physics",
+        unit: "milliseconds",
+        extra: `room:${this.room.id}`,
+      },
+      () => {
+        applyPhysics(this.room, elapsedTime, (damage) => damages.push(damage));
+      },
+    );
 
     const deadPlayerIds = new Set<string>();
 

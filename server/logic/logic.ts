@@ -88,11 +88,18 @@ function createRoom(roomWithBots: boolean): Room {
 
       controller.updateRoom(elapsedTime / 1000);
 
-      getLogger().stats("room milliseconds between intervals", elapsedTime);
-      getLogger().stats(
-        "room update milliseconds delay",
-        roomUpdateStopWatch.next(),
-      );
+      getLogger().stats({
+        name: "room interval delay",
+        unit: "milliseconds",
+        extra: `room:${room.id}`,
+        value: elapsedTime,
+      });
+      getLogger().stats({
+        name: "room update delay",
+        unit: "milliseconds",
+        extra: `room:${room.id}`,
+        value: roomUpdateStopWatch.next(),
+      });
     }
   }, 15);
 

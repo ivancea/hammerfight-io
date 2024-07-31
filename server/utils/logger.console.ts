@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 
-import { BaseLogger, InternalLogger } from "./logger.base";
+import { BaseLogger, InternalLogger, StatsRequest } from "./logger.base";
 
 export class ConsoleLogger extends BaseLogger {
   constructor(private otherLogger?: InternalLogger) {
@@ -22,8 +22,8 @@ export class ConsoleLogger extends BaseLogger {
     this.otherLogger?.error(message);
   }
 
-  stats(name: string, value: number) {
-    this.otherLogger?.stats(name, value);
+  stats(statsRequest: StatsRequest) {
+    this.otherLogger?.stats(statsRequest);
   }
 
   destroy() {

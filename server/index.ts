@@ -24,6 +24,11 @@ async function startServer() {
     });
 
     socket.on("requestJoin", async (event, callback) => {
+      getLogger().stats({
+        name: "user join request",
+        unit: "count",
+        value: 1,
+      });
       const { room, player } = await joinPlayer(
         socket,
         event.username,
@@ -40,6 +45,11 @@ async function startServer() {
     });
 
     socket.on("updateAcceleration", (event) => {
+      getLogger().stats({
+        name: "user acceleration update",
+        unit: "count",
+        value: 1,
+      });
       const player = getPlayer(socket);
 
       if (!player) {

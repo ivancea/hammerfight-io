@@ -2,6 +2,15 @@ import { StopWatch } from "./stopwatch";
 
 export const LOGGER_MODULE = "server";
 
+export type StatsUnit = "milliseconds" | "count";
+
+export type StatsRequest = {
+  name: string;
+  unit: StatsUnit;
+  extra?: string;
+  value: number;
+};
+
 export type Logger = {
   info(message: string): void;
   warn(message: string): void;
@@ -11,16 +20,14 @@ export type Logger = {
    *
    * It accumulates metrics with the same name, and flushes them automatically.
    */
-  stats(name: string, value: number): void;
+  stats(statsRequest: StatsRequest): void;
   /**
    * Same as `stats`, but it measures the time it takes to execute the callback.
    */
-  statsFunction<T>(name: string, callback: () => T): T;
-};
-
-export type StatsMetrics = {
-  name: string;
-  add(value: number): void;
+  statsFunction<T>(
+    statsRequest: Omit<StatsRequest, "value">,
+    callback: () => T,
+  ): T;
 };
 
 export type InternalLogger = Logger & {
@@ -34,14 +41,17 @@ export abstract class BaseLogger implements Logger {
 
   abstract error(message: string): void;
 
-  abstract stats(name: string, value: number): void;
+  abstract stats(statsRequest: StatsRequest): void;
 
   abstract destroy(): void;
 
-  statsFunction<T>(name: string, callback: () => T): T {
+  statsFunction<T>(
+    statsRequest: Omit<StatsRequest, "value">,
+    callback: () => T,
+  ): T {
     const stopWatch = new StopWatch();
     const result = callback();
-    this.stats(name, stopWatch.next());
+    this.stats({ ...statsRequest, value: stopWatch.next() });
     return result;
   }
 }

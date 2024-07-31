@@ -5,7 +5,12 @@ import {
   PropertyName,
 } from "@elastic/elasticsearch/lib/api/types";
 import os from "os";
-import { BaseLogger, InternalLogger, LOGGER_MODULE } from "./logger.base";
+import {
+  BaseLogger,
+  InternalLogger,
+  LOGGER_MODULE,
+  StatsRequest,
+} from "./logger.base";
 
 export class ElasticSearchLogger extends BaseLogger {
   readonly bufferLimit = 1000;
@@ -14,7 +19,7 @@ export class ElasticSearchLogger extends BaseLogger {
   readonly logsBuffer: Record<string, unknown>[] = [];
   readonly statsBuffer: Record<string, unknown>[] = [];
 
-  autoStatsBuffer: Record<string, number[]> = {};
+  autoStatsBuffer: Record<string, StatsRequest[]> = {};
 
   readonly interval: NodeJS.Timeout;
 
@@ -29,9 +34,8 @@ export class ElasticSearchLogger extends BaseLogger {
 
     this.interval = setInterval(() => {
       this.flushLogs();
-      this.flushAutoStats();
       this.flushStats();
-    }, 5000);
+    }, 10_000);
   }
 
   static async create(
@@ -67,20 +71,21 @@ export class ElasticSearchLogger extends BaseLogger {
     this.addLog("error", message);
   }
 
-  stats(name: string, value: number) {
-    const existingAutoStats = this.autoStatsBuffer[name];
+  stats(statsRequest: StatsRequest) {
+    const key = `${statsRequest.name}__${statsRequest.extra ?? ""}--${statsRequest.unit}`;
+    const existingAutoStats = this.autoStatsBuffer[key];
 
     if (!existingAutoStats) {
-      this.autoStatsBuffer[name] = [value];
+      this.autoStatsBuffer[key] = [statsRequest];
       return;
     }
 
-    existingAutoStats.push(value);
+    existingAutoStats.push(statsRequest);
 
     if (existingAutoStats.length >= 500) {
       const stats = statsFrom(existingAutoStats);
-      this.addStats(name, stats.avg, stats.max, stats.min, stats.count);
-      delete this.autoStatsBuffer[name];
+      this.addStats(statsRequest, stats);
+      delete this.autoStatsBuffer[key];
     }
   }
 
@@ -116,18 +121,17 @@ export class ElasticSearchLogger extends BaseLogger {
     this.flush(this.logsIndex, this.logsBuffer);
   }
 
-  private flushAutoStats() {
-    for (const [name, values] of Object.entries(this.autoStatsBuffer)) {
-      if (values.length > 0) {
-        const stats = statsFrom(values);
-        this.addStats(name, stats.avg, stats.max, stats.min, stats.count);
+  private flushStats() {
+    for (const requests of Object.values(this.autoStatsBuffer)) {
+      const firstRequest = requests[0];
+      if (firstRequest) {
+        const stats = statsFrom(requests);
+        this.addStats(firstRequest, stats);
       }
     }
 
     this.autoStatsBuffer = {};
-  }
 
-  private flushStats() {
     this.flush(this.statsIndex, this.statsBuffer);
   }
 
@@ -145,22 +149,19 @@ export class ElasticSearchLogger extends BaseLogger {
     }
   }
 
-  private addStats(
-    name: string,
-    avg: number,
-    max: number,
-    min: number,
-    count: number,
-  ) {
+  private addStats(statsRequest: StatsRequest, stats: Stats) {
     this.statsBuffer.push({
       hostname: this.hostname,
       module: LOGGER_MODULE,
       timestamp: Date.now(),
-      name,
-      avg,
-      max,
-      min,
-      count,
+      name: statsRequest.name,
+      unit: statsRequest.unit,
+      extra: statsRequest.extra,
+      sum: stats.sum,
+      avg: stats.avg,
+      max: stats.max,
+      min: stats.min,
+      count: stats.count,
     });
 
     if (this.statsBuffer.length >= this.bufferLimit) {
@@ -169,13 +170,22 @@ export class ElasticSearchLogger extends BaseLogger {
   }
 }
 
-function statsFrom(values: number[]) {
+type Stats = {
+  sum: number;
+  avg: number;
+  max: number;
+  min: number;
+  count: number;
+};
+
+function statsFrom(requests: StatsRequest[]): Stats {
+  const values = requests.map((r) => r.value);
   const sum = values.reduce((a, b) => a + b, 0);
   const max = Math.max(...values);
   const min = Math.min(...values);
   const avg = sum / values.length;
 
-  return { avg, max, min, count: values.length };
+  return { sum, avg, max, min, count: values.length };
 }
 
 async function initializeElasticSearch(
@@ -209,6 +219,15 @@ async function initializeElasticSearch(
     ...commonProperties,
     name: {
       type: "keyword",
+    },
+    unit: {
+      type: "keyword",
+    },
+    extra: {
+      type: "keyword",
+    },
+    sum: {
+      type: "double",
     },
     avg: {
       type: "double",
