@@ -3,6 +3,7 @@ import { Context } from "../context";
 import { AbsoluteMouseInputHandler } from "./input-handler.absolute-mouse";
 import { GamepadInputHandler } from "./input-handler.gamepad";
 import { RelativeMouseInputHandler } from "./input-handler.relative-mouse";
+import { VirtualJoystickInputHandler } from "./input-handler.virtual-joystick";
 
 export const availableInputHandlers = [
   {
@@ -16,6 +17,10 @@ export const availableInputHandlers = [
   {
     id: "Gamepad",
     name: "Gamepad",
+  },
+  {
+    id: "VirtualJoystick",
+    name: "Virtual Joystick",
   },
 ] as const;
 
@@ -33,6 +38,13 @@ export function makeInputHandler(
 
     case "RelativeMouse":
       return new RelativeMouseInputHandler(
+        context,
+        htmlElement,
+        updateAcceleration,
+      );
+
+    case "VirtualJoystick":
+      return new VirtualJoystickInputHandler(
         context,
         htmlElement,
         updateAcceleration,
