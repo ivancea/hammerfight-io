@@ -1,8 +1,8 @@
 import { Vector } from "../../common/vector";
 import { Context } from "../context";
-import { makeAbsoluteMouseInput } from "./absolute-mouse-input";
-import { makeGamepadInput } from "./gamepad-input";
-import { makeRelativeMouseInput } from "./relative-mouse-input";
+import { AbsoluteMouseInputHandler } from "./input-handler.absolute-mouse";
+import { GamepadInputHandler } from "./input-handler.gamepad";
+import { RelativeMouseInputHandler } from "./input-handler.relative-mouse";
 
 export const availableInputHandlers = [
   {
@@ -29,13 +29,21 @@ export function makeInputHandler(
 ) {
   switch (inputHandlerId) {
     case "Gamepad":
-      return makeGamepadInput(context, updateAcceleration);
+      return new GamepadInputHandler(context, updateAcceleration);
 
     case "RelativeMouse":
-      return makeRelativeMouseInput(context, htmlElement, updateAcceleration);
+      return new RelativeMouseInputHandler(
+        context,
+        htmlElement,
+        updateAcceleration,
+      );
 
     case "AbsoluteMouse":
     default:
-      return makeAbsoluteMouseInput(context, htmlElement, updateAcceleration);
+      return new AbsoluteMouseInputHandler(
+        context,
+        htmlElement,
+        updateAcceleration,
+      );
   }
 }

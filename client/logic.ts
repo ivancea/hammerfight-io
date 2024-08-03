@@ -17,11 +17,11 @@ import {
   updatePlayer,
   updateRoom,
 } from "./graphics";
-import { InputHandler } from "./input/input-handler";
 import {
   InputHandlerId,
   makeInputHandler,
 } from "./input/input-handler-catalog";
+import { InputHandler } from "./input/input-handler.base";
 
 let inputHandler: InputHandler | undefined;
 
