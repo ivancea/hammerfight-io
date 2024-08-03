@@ -21,7 +21,7 @@ function main() {
   for (const inputHandler of availableInputHandlers) {
     const option = document.createElement("option");
     option.value = inputHandler.id;
-    option.text = inputHandler.name;
+    option.text = inputHandler.getName();
     inputModeInput.add(option);
   }
 

@@ -1,3 +1,4 @@
+import isMobile from "is-mobile";
 import { assert } from "../../common/errors";
 import { interpolateMagnitude, magnitude, Vector } from "../../common/vector";
 import { Context, getContext } from "../context";
@@ -9,13 +10,16 @@ import { InputHandler } from "./input-handler.base";
  * The acceleration with be calculated based on the mouse movement.
  */
 export class RelativeMouseInputHandler implements InputHandler {
+  static id = "RelativeMouse" as const;
+  static getName = () => "Mouse (Relative)";
+  static isAvailable = () => !isMobile();
+
   /**
    * A simple "weighted moving average" to smooth out the mouse movement.
    *
    * Useful to avoid changing the direction after a minimal mouse movement or vibration.
    */
   accumulatedMovement: Vector = { x: 0, y: 0 };
-
   interval: NodeJS.Timeout;
 
   constructor(

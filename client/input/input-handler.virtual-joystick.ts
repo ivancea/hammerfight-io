@@ -1,3 +1,4 @@
+import isMobile from "is-mobile";
 import nipplejs from "nipplejs";
 import { assert } from "../../common/errors";
 import { interpolateMagnitude, Vector } from "../../common/vector";
@@ -8,6 +9,10 @@ import { InputHandler } from "./input-handler.base";
  * Input handler that creates a virtual joystick.
  */
 export class VirtualJoystickInputHandler implements InputHandler {
+  static id = "VirtualJoystick" as const;
+  static getName = () => "Virtual Joystick";
+  static isAvailable = () => isMobile();
+
   joystickManager: nipplejs.JoystickManager;
 
   constructor(

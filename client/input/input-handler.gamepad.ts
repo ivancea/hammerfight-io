@@ -7,10 +7,15 @@ import { InputHandler } from "./input-handler.base";
  * Input handler that uses the connected Gamepad axes.
  */
 export class GamepadInputHandler implements InputHandler {
+  static id = "Gamepad" as const;
+  static getName = () => "Gamepad";
+  static isAvailable = () => true;
+
   interval: NodeJS.Timeout;
 
   constructor(
     private context: Context,
+    private element: HTMLElement,
     private updateAcceleration: (newAcceleration: Vector) => void,
   ) {
     window.addEventListener("gamepadconnected", this.onGamepadConnected);

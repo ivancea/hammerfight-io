@@ -1,3 +1,4 @@
+import isMobile from "is-mobile";
 import { assert } from "../../common/errors";
 import { interpolateMagnitude, subtract, Vector } from "../../common/vector";
 import { Context, getContext } from "../context";
@@ -10,6 +11,10 @@ import { InputHandler } from "./input-handler.base";
  * The farther the mouse is from the player, the higher the acceleration.
  */
 export class AbsoluteMouseInputHandler implements InputHandler {
+  static id = "AbsoluteMouse" as const;
+  static getName = () => "Mouse (Absolute)";
+  static isAvailable = () => !isMobile();
+
   lastMousePosition: Vector | undefined;
   interval: NodeJS.Timeout;
 
