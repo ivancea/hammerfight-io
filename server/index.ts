@@ -29,6 +29,7 @@ async function startServer() {
         unit: "count",
         value: 1,
       });
+
       const { room, player } = await joinPlayer(
         socket,
         event.username,
@@ -45,16 +46,18 @@ async function startServer() {
     });
 
     socket.on("updateAcceleration", (event) => {
-      getLogger().stats({
-        name: "user acceleration update",
-        unit: "count",
-        value: 1,
-      });
       const player = getPlayer(socket);
 
       if (!player) {
         return;
       }
+
+      getLogger().stats({
+        name: "user acceleration update",
+        unit: "count",
+        extra: `player:${player.id}`,
+        value: 1,
+      });
 
       const room = getRoom(player);
 
