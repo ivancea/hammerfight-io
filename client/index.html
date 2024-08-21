@@ -20,8 +20,20 @@
       <button id="room-selection-form-submit" type="button">Join room</button>
     </div>
     <div id="game"></div>
-    <div style="font-size: small">
-      Version <%= htmlWebpackPlugin.options.appVersion %>
+    <div
+      style="
+        font-size: small;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+      "
+    >
+      <span>Version <%= htmlWebpackPlugin.options.appVersion %></span>
+      <span
+        ><a href="https://github.com/ivancea/hammerfight-io/" target="_blank"
+          >Open source project</a
+        ></span
+      >
     </div>
   </body>
 </html>
