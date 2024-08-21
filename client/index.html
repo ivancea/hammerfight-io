@@ -4,20 +4,34 @@
     <!-- Webpack automatic injection of tags enabled -->
   </head>
   <body>
-    <div id="room-selection-form">
-      <label for="username">Username</label>
-      <input id="username" name="username" type="text" placeholder="Username" />
-
-      <label for="input-mode">Input mode</label>
-      <select id="input-mode" name="input-mode"></select>
-
-      <label for="bots">Bots</label>
-      <input id="bots" name="bots" type="checkbox" checked />
-
-      <label for="debug-mode">Debug</label>
-      <input id="debug-mode" name="debug-mode" type="checkbox" />
-
-      <button id="room-selection-form-submit" type="button">Join room</button>
+    <div
+      id="room-selection-form"
+      style="display: flex; flex-direction: row; gap: 1em"
+    >
+      <span>
+        <label for="username">Username</label>
+        <input
+          id="username"
+          name="username"
+          type="text"
+          placeholder="Username"
+        />
+      </span>
+      <span>
+        <label for="input-mode">Input mode</label>
+        <select id="input-mode" name="input-mode"></select>
+      </span>
+      <span>
+        <label for="bots">Bots</label>
+        <input id="bots" name="bots" type="checkbox" checked />
+      </span>
+      <span>
+        <label for="debug-mode">Debug</label>
+        <input id="debug-mode" name="debug-mode" type="checkbox" />
+      </span>
+      <span>
+        <button id="room-selection-form-submit" type="button">Join room</button>
+      </span>
     </div>
     <div id="game"></div>
     <div
