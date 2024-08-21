@@ -91,13 +91,17 @@ function createRoom(roomWithBots: boolean): Room {
       getLogger().stats({
         name: "room interval delay",
         unit: "milliseconds",
-        extra: `room:${room.id}`,
+        extra: {
+          room_id: `${room.id}`,
+        },
         value: elapsedTime,
       });
       getLogger().stats({
         name: "room update delay",
         unit: "milliseconds",
-        extra: `room:${room.id}`,
+        extra: {
+          room_id: `${room.id}`,
+        },
         value: roomUpdateStopWatch.next(),
       });
     }

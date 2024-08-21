@@ -7,6 +7,7 @@ import {
 import os from "os";
 import {
   BaseLogger,
+  Extra,
   InternalLogger,
   LOGGER_MODULE,
   StatsRequest,
@@ -59,20 +60,20 @@ export class ElasticSearchLogger extends BaseLogger {
     return new ElasticSearchLogger(client, logsIndex, statsIndex);
   }
 
-  info(message: string) {
-    this.addLog("info", message);
+  info(message: string, extra?: Extra) {
+    this.addLog("info", message, extra);
   }
 
-  warn(message: string) {
-    this.addLog("warn", message);
+  warn(message: string, extra?: Extra) {
+    this.addLog("warn", message, extra);
   }
 
-  error(message: string) {
-    this.addLog("error", message);
+  error(message: string, extra?: Extra) {
+    this.addLog("error", message, extra);
   }
 
   stats(statsRequest: StatsRequest) {
-    const key = `${statsRequest.name}__${statsRequest.extra ?? ""}--${statsRequest.unit}`;
+    const key = `${statsRequest.name}__${statsRequest.extra ? JSON.stringify(statsRequest.extra) : ""}--${statsRequest.unit}`;
     const existingAutoStats = this.autoStatsBuffer[key];
 
     if (!existingAutoStats) {
@@ -107,6 +108,16 @@ export class ElasticSearchLogger extends BaseLogger {
           log,
         ]),
       })
+      .then((response) => {
+        if (response.errors) {
+          console.error(
+            `Error sending logs to ElasticSearch index ${index}`,
+            response.items
+              .filter((item) => item.index?.error)
+              .map((item) => item.index?.error?.reason),
+          );
+        }
+      })
       .catch((error: unknown) => {
         console.error(
           `Error sending logs to ElasticSearch index ${index}`,
@@ -135,13 +146,18 @@ export class ElasticSearchLogger extends BaseLogger {
     this.flush(this.statsIndex, this.statsBuffer);
   }
 
-  private addLog(level: "info" | "warn" | "error", message: string) {
+  private addLog(
+    level: "info" | "warn" | "error",
+    message: string,
+    extra?: Extra,
+  ) {
     this.logsBuffer.push({
       hostname: this.hostname,
       module: LOGGER_MODULE,
       timestamp: Date.now(),
       level,
       message,
+      extra,
     });
 
     if (this.logsBuffer.length >= this.bufferLimit) {
@@ -205,6 +221,20 @@ async function initializeElasticSearch(
     },
   } as const;
 
+  const extraMapping = {
+    properties: {
+      player_ip: {
+        type: "ip",
+      },
+      player_id: {
+        type: "keyword",
+      },
+      room_id: {
+        type: "keyword",
+      },
+    },
+  } as const;
+
   await createOrUpdateIndex(client, logsIndex, {
     ...commonProperties,
     level: {
@@ -213,6 +243,7 @@ async function initializeElasticSearch(
     message: {
       type: "text",
     },
+    extra: extraMapping,
   });
 
   await createOrUpdateIndex(client, statsIndex, {
@@ -223,9 +254,7 @@ async function initializeElasticSearch(
     unit: {
       type: "keyword",
     },
-    extra: {
-      type: "keyword",
-    },
+    extra: extraMapping,
     sum: {
       type: "double",
     },
@@ -253,6 +282,7 @@ async function createOrUpdateIndex(
     console.log(`Updating mappings for ElasticSearch "${index}" index`);
     await client.indices.putMapping({
       index,
+      dynamic: "strict",
       properties,
     });
   } else {
@@ -261,6 +291,7 @@ async function createOrUpdateIndex(
       index,
       body: {
         mappings: {
+          dynamic: "strict",
           properties,
         },
       },

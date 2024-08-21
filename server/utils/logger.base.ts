@@ -4,17 +4,23 @@ export const LOGGER_MODULE = "server";
 
 export type StatsUnit = "milliseconds" | "count";
 
+export type Extra = {
+  player_ip?: string;
+  player_id?: string;
+  room_id?: string;
+};
+
 export type StatsRequest = {
   name: string;
   unit: StatsUnit;
-  extra?: string;
+  extra?: Extra;
   value: number;
 };
 
 export type Logger = {
-  info(message: string): void;
-  warn(message: string): void;
-  error(message: string): void;
+  info(message: string, extra?: Extra): void;
+  warn(message: string, extra?: Extra): void;
+  error(message: string, extra?: Extra): void;
   /**
    * Accumulates metrics, and flushes them as metrics: Average, max, min, count...
    *

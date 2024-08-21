@@ -27,6 +27,9 @@ async function startServer() {
       getLogger().stats({
         name: "user join request",
         unit: "count",
+        extra: {
+          player_ip: socket.handshake.address,
+        },
         value: 1,
       });
 
@@ -38,6 +41,11 @@ async function startServer() {
 
       getLogger().info(
         `User ${socket.id} with name "${event.username}" joined room ${room.id}`,
+        {
+          player_ip: socket.handshake.address,
+          player_id: player.id,
+          room_id: `${room.id}`,
+        },
       );
 
       callback(room, player);
@@ -55,7 +63,9 @@ async function startServer() {
       getLogger().stats({
         name: "user acceleration update",
         unit: "count",
-        extra: `player:${player.id}`,
+        extra: {
+          player_id: player.id,
+        },
         value: 1,
       });
 

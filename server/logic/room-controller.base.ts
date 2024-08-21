@@ -72,7 +72,9 @@ export class BaseRoomController implements RoomController {
       {
         name: "update bots",
         unit: "milliseconds",
-        extra: `room:${this.room.id}`,
+        extra: {
+          room_id: `${this.room.id}`,
+        },
       },
       () => {
         updateBots(this.room);
@@ -83,7 +85,9 @@ export class BaseRoomController implements RoomController {
       {
         name: "apply physics",
         unit: "milliseconds",
-        extra: `room:${this.room.id}`,
+        extra: {
+          room_id: `${this.room.id}`,
+        },
       },
       () => {
         applyPhysics(this.room, elapsedTime, (damage) => damages.push(damage));
