@@ -8,6 +8,9 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: deploy
+
 jobs:
   terraform:
     name: "Terraform"
