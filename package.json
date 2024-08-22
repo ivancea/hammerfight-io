@@ -22,6 +22,8 @@
     "compression": "^1.7.4",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "forwarded-parse": "^2.1.2",
+    "is-ip": "^5.0.1",
     "is-mobile": "^4.0.0",
     "nipplejs": "^0.10.2",
     "socket.io": "^4.7.5",

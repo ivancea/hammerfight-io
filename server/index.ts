@@ -2,6 +2,7 @@ import { clampMagnitude } from "../common/vector";
 import { env } from "./env";
 import { disconnectPlayer, joinPlayer } from "./logic/logic";
 import { server } from "./server";
+import { getClientIp } from "./socket-utils";
 import { getLogger, initializeLogger } from "./utils/logger";
 import { getPlayer, getRoom } from "./world";
 
@@ -24,11 +25,13 @@ async function startServer() {
     });
 
     socket.on("requestJoin", async (event, callback) => {
+      const clientIp = getClientIp(socket);
+
       getLogger().stats({
         name: "user join request",
         unit: "count",
         extra: {
-          player_ip: socket.handshake.address,
+          player_ip: clientIp,
         },
         value: 1,
       });
@@ -42,7 +45,7 @@ async function startServer() {
       getLogger().info(
         `User ${socket.id} with name "${event.username}" joined room ${room.id}`,
         {
-          player_ip: socket.handshake.address,
+          player_ip: clientIp,
           player_id: player.id,
           room_id: `${room.id}`,
         },
