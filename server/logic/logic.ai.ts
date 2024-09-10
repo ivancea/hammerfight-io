@@ -12,8 +12,7 @@ import {
 const botMessages = [
   "Come here <PLAYER_NAME>!",
   "Fight you coward!",
-  "Let me hit that ass!",
-  "Is that all the balls you have?",
+  "Is that all you have?",
   "Are you scared <PLAYER_NAME>?",
   "I'll end you in no time!",
   "Are they sending children to fight now?",
