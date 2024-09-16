@@ -113,6 +113,14 @@ export class BaseRoomController implements RoomController {
       const damagedPlayer = this.room.players[damage.damagedPlayerId];
       assert(damagedPlayer, "Damaged player not found");
 
+      if (
+        damage.type === "playerCollision" &&
+        damagedPlayer.weapon.type === "aura"
+      ) {
+        // Players with aura weapons are immune to player collisions
+        continue;
+      }
+
       // TODO: Ignore damage if damaged by same source in the last N milliseconds
 
       damagedPlayer.health -= damage.amount;

@@ -31,7 +31,8 @@ export function handleAuraWeaponCollisions(
         type: "weaponCollision",
         damagedPlayerId: otherPlayer.id,
         playerId: player.id,
-        amount: otherPlayerWeaponDamage / elapsedTime,
+        amount:
+          (otherPlayerWeaponDamage * weapon.damageMultiplier) / elapsedTime,
       });
     }
 

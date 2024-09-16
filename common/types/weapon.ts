@@ -48,12 +48,17 @@ export type AuraWeapon = BaseWeapon & {
    * The radius the aura extends from the player.
    */
   radiusFromPlayer: number;
+  /**
+   * A multiplier on the damage dealt by the aura to other players.
+   */
+  damageMultiplier: number;
 };
 
 export function makeAuraWeapon(): AuraWeapon {
   return {
     type: "aura",
-    playerCollisionWeightMultiplier: 3,
+    playerCollisionWeightMultiplier: 2,
     radiusFromPlayer: 5,
+    damageMultiplier: 1.5,
   };
 }
