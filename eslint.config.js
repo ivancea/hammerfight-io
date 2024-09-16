@@ -27,6 +27,9 @@ export default tseslint.config(
         "error",
         { allowNumber: true },
       ],
+      "@typescript-eslint/no-unused-vars": "warn",
+      "@typescript-eslint/no-unsafe-call": "warn",
+      "@typescript-eslint/no-unsafe-member-access": "warn",
     },
     languageOptions: {
       parserOptions: {

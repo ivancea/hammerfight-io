@@ -1,4 +1,6 @@
+import { match } from "ts-pattern";
 import { Damage } from "./damage";
+import { handleAuraWeaponCollisions } from "./physics.weapon.aura";
 import {
   applyFrictionToFlailWeapon,
   handleFlailWeaponCollisions,
@@ -9,11 +11,14 @@ import { Player } from "./types/player";
 import { Room } from "./types/room";
 
 export function moveWeapon(player: Player, room: Room, elapsedTime: number) {
-  switch (player.weapon.type) {
-    case "flail":
-      moveFlailWeapon(player.weapon, player, room, elapsedTime);
-      break;
-  }
+  match(player.weapon)
+    .with({ type: "flail" }, (weapon) => {
+      moveFlailWeapon(weapon, player, room, elapsedTime);
+    })
+    .with({ type: "aura" }, () => {
+      // No-op: Aura weapons don't move
+    })
+    .exhaustive();
 }
 
 export function handleWeaponCollisions(
@@ -22,17 +27,26 @@ export function handleWeaponCollisions(
   elapsedTime: number,
   onPlayerDamage: (damage: Damage) => void,
 ) {
-  switch (player.weapon.type) {
-    case "flail":
+  match(player.weapon)
+    .with({ type: "flail" }, (weapon) => {
       handleFlailWeaponCollisions(
-        player.weapon,
+        weapon,
         player,
         room,
         elapsedTime,
         onPlayerDamage,
       );
-      break;
-  }
+    })
+    .with({ type: "aura" }, (weapon) => {
+      handleAuraWeaponCollisions(
+        weapon,
+        player,
+        room,
+        elapsedTime,
+        onPlayerDamage,
+      );
+    })
+    .exhaustive();
 }
 
 export function handleWeaponLimitsCollisions(
@@ -40,16 +54,14 @@ export function handleWeaponLimitsCollisions(
   room: Room,
   elapsedTime: number,
 ) {
-  switch (player.weapon.type) {
-    case "flail":
-      handleFlailWeaponLimitsCollisions(
-        player.weapon,
-        player,
-        room,
-        elapsedTime,
-      );
-      break;
-  }
+  match(player.weapon)
+    .with({ type: "flail" }, (weapon) => {
+      handleFlailWeaponLimitsCollisions(weapon, player, room, elapsedTime);
+    })
+    .with({ type: "aura" }, () => {
+      // No-op: Aura weapons don't collide with limits
+    })
+    .exhaustive();
 }
 
 export function applyFrictionToWeapon(
@@ -57,9 +69,12 @@ export function applyFrictionToWeapon(
   room: Room,
   elapsedTime: number,
 ) {
-  switch (player.weapon.type) {
-    case "flail":
-      applyFrictionToFlailWeapon(player.weapon, player, room, elapsedTime);
-      break;
-  }
+  match(player.weapon)
+    .with({ type: "flail" }, (weapon) => {
+      applyFrictionToFlailWeapon(weapon, player, room, elapsedTime);
+    })
+    .with({ type: "aura" }, () => {
+      // No-op: Aura weapons don't move, so they don't have friction
+    })
+    .exhaustive();
 }

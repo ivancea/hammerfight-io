@@ -40,6 +40,7 @@ async function startServer() {
         socket,
         event.username,
         event.roomWithBots,
+        event.weapon,
       );
 
       getLogger().info(

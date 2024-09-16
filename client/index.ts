@@ -1,3 +1,5 @@
+import { capitalize } from "lodash-es";
+import { WEAPON_TYPES, WeaponType } from "../common/types/weapon";
 import {
   availableInputHandlers,
   InputHandlerId,
@@ -11,6 +13,7 @@ function main() {
   const inputModeInput = document.getElementById(
     "input-mode",
   ) as HTMLSelectElement;
+  const weaponInput = document.getElementById("weapon") as HTMLSelectElement;
   const botsInput = document.getElementById("bots") as HTMLInputElement;
   const debugModeInput = document.getElementById(
     "debug-mode",
@@ -24,6 +27,13 @@ function main() {
     option.text = inputHandler.getName();
     inputModeInput.add(option);
   }
+  weaponInput.innerHTML = "";
+  for (const weaponType of WEAPON_TYPES) {
+    const option = document.createElement("option");
+    option.value = weaponType;
+    option.text = capitalize(weaponType);
+    weaponInput.add(option);
+  }
 
   // On start
   document
@@ -33,10 +43,11 @@ function main() {
 
       const username = usernameInput.value;
       const inputHandlerId = inputModeInput.value as InputHandlerId;
+      const weapon = weaponInput.value as WeaponType;
       const bots = botsInput.checked;
       const debugMode = debugModeInput.checked;
 
-      joinRoom(username, inputHandlerId, bots, debugMode);
+      joinRoom(username, inputHandlerId, weapon, bots, debugMode);
     });
 }
 

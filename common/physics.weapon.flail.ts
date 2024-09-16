@@ -1,3 +1,4 @@
+import { match } from "ts-pattern";
 import { Damage } from "./damage";
 import {
   applyFriction,
@@ -66,11 +67,14 @@ export function handleFlailWeaponCollisions(
       });
     }
 
-    switch (otherPlayer.weapon.type) {
-      case "flail":
-        handleCirclesCollision(weapon, otherPlayer.weapon, elapsedTime);
-        break;
-    }
+    match(otherPlayer.weapon)
+      .with({ type: "flail" }, (otherWeapon) => {
+        handleCirclesCollision(weapon, otherWeapon, elapsedTime);
+      })
+      .with({ type: "aura" }, () => {
+        // No-op: Aura weapons only collide with players and other aura weapons
+      })
+      .exhaustive();
   }
 }
 

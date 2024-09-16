@@ -4,6 +4,7 @@ import type {
   SocketIoClientSentEvents,
   SocketIoServerSentEvents,
 } from "../common/types/socket-io";
+import { WeaponType } from "../common/types/weapon";
 import { joinUrl } from "../common/urls";
 import { env } from "./env";
 import { InputHandlerId } from "./input/input-handler-catalog";
@@ -24,6 +25,7 @@ let socket:
 export function joinRoom(
   username: string,
   inputHandlerId: InputHandlerId,
+  weapon: WeaponType,
   roomWithBots: boolean,
   debugMode: boolean,
 ) {
@@ -69,10 +71,14 @@ export function joinRoom(
     stopGame();
   });
 
-  socket.emit("requestJoin", { username, roomWithBots }, (room, player) => {
-    assert(socket, "Socket should be defined");
-    console.log(`Joined room ${room.id} as player ${player.id}`, room);
+  socket.emit(
+    "requestJoin",
+    { username, roomWithBots, weapon },
+    (room, player) => {
+      assert(socket, "Socket should be defined");
+      console.log(`Joined room ${room.id} as player ${player.id}`, room);
 
-    initializeGame(socket, room, player, inputHandlerId, debugMode);
-  });
+      initializeGame(socket, room, player, inputHandlerId, debugMode);
+    },
+  );
 }

@@ -1,6 +1,7 @@
 import { Vector } from "../vector";
 import { Player } from "./player";
 import { Room } from "./room";
+import { WeaponType } from "./weapon";
 
 export type SocketIoClientSentEvents = {
   requestJoin: EventWith<
@@ -8,6 +9,7 @@ export type SocketIoClientSentEvents = {
       {
         username: string;
         roomWithBots: boolean;
+        weapon: WeaponType;
       },
       (room: Room, player: Player) => void,
     ]

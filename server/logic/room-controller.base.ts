@@ -1,9 +1,14 @@
+import { match } from "ts-pattern";
 import { Damage } from "../../common/damage";
 import { assert } from "../../common/errors";
 import { applyPhysics } from "../../common/physics";
 import { makePlayer, Player } from "../../common/types/player";
 import { Room } from "../../common/types/room";
-import { makeFlailWeapon } from "../../common/types/weapon";
+import {
+  makeAuraWeapon,
+  makeFlailWeapon,
+  WeaponType,
+} from "../../common/types/weapon";
 import { divide } from "../../common/vector";
 import { server, Socket } from "../server";
 import { getLogger } from "../utils/logger";
@@ -13,7 +18,11 @@ import { updateBots } from "./logic.ai";
 export type RoomController = {
   room: Room;
 
-  joinPlayer(socket: Socket, username: string): Promise<Player>;
+  joinPlayer(
+    socket: Socket,
+    username: string,
+    weapon: WeaponType,
+  ): Promise<Player>;
   disconnectPlayer(player: Player): void;
   updateRoom(elapsedTime: number): void;
   destroy(): void;
@@ -34,7 +43,7 @@ export class BaseRoomController implements RoomController {
 
   constructor(public room: Room) {}
 
-  async joinPlayer(socket: Socket, username: string) {
+  async joinPlayer(socket: Socket, username: string, weapon: WeaponType) {
     await server.addToRoom(socket, this.room);
 
     const playerPosition = divide(this.room.size, 2); // TODO: Find an empty position
@@ -43,7 +52,10 @@ export class BaseRoomController implements RoomController {
       this.room.id,
       username,
       playerPosition,
-      makeFlailWeapon(playerPosition),
+      match(weapon)
+        .with("flail", () => makeFlailWeapon(playerPosition))
+        .with("aura", () => makeAuraWeapon())
+        .exhaustive(),
     );
 
     socketsById[socket.id] = socket;

@@ -1,6 +1,7 @@
 import { assert } from "../../common/errors";
 import { Player } from "../../common/types/player";
 import { Room } from "../../common/types/room";
+import { WeaponType } from "../../common/types/weapon";
 import { Socket } from "../server";
 import { getLogger } from "../utils/logger";
 import { StopWatch } from "../utils/stopwatch";
@@ -15,6 +16,7 @@ export async function joinPlayer(
   socket: Socket,
   username: string,
   roomWithBots: boolean,
+  weapon: WeaponType,
 ) {
   // TODO: Validate username
 
@@ -22,7 +24,7 @@ export async function joinPlayer(
   const roomController = roomControllers[room.id];
   assert(roomController, "Room controller not found");
 
-  const player = await roomController.joinPlayer(socket, username);
+  const player = await roomController.joinPlayer(socket, username, weapon);
 
   return {
     room,

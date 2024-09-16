@@ -42,23 +42,38 @@ export function moveWithAcceleration(
   entity.velocity = newVelocity;
 }
 
-/**
- * Handles the collision between two circles.
- *
- * @returns The amount of force applied in the collision, for each collider.
- */
 export function handleCirclesCollision(
   collider1: CircleCollider,
   collider2: CircleCollider,
   elapsedTime: number,
 ): [number, number] {
+  return handleRawCirclesCollision(
+    collider1,
+    collider1.radius,
+    collider1.weight,
+    collider2,
+    collider2.radius,
+    collider2.weight,
+    elapsedTime,
+  );
+}
+
+export function handleRawCirclesCollision(
+  entity1: EntityWithPosition & EntityWithVelocity,
+  radius1: number,
+  weight1: number,
+  entity2: EntityWithPosition & EntityWithVelocity,
+  radius2: number,
+  weight2: number,
+  elapsedTime: number,
+): [number, number] {
   const separationVector = {
-    x: collider2.position.x - collider1.position.x,
-    y: collider2.position.y - collider1.position.y,
+    x: entity2.position.x - entity1.position.x,
+    y: entity2.position.y - entity1.position.y,
   };
 
   const distance = magnitude(separationVector);
-  const minDistance = collider1.radius + collider2.radius;
+  const minDistance = radius1 + radius2;
 
   if (distance > minDistance) {
     return [0, 0];
@@ -70,23 +85,23 @@ export function handleCirclesCollision(
   );
   const collider1PushVector = multiply(collider2PushVector, -1);
 
-  collider1.position = add(collider1.position, collider1PushVector);
-  collider2.position = add(collider2.position, collider2PushVector);
+  entity1.position = add(entity1.position, collider1PushVector);
+  entity2.position = add(entity2.position, collider2PushVector);
 
-  const totalWeight = collider1.weight + collider2.weight;
+  const totalWeight = weight1 + weight2;
 
-  const collider1WeightRatio = collider1.weight / totalWeight;
-  const collider2WeightRatio = collider2.weight / totalWeight;
+  const collider1WeightRatio = weight1 / totalWeight;
+  const collider2WeightRatio = weight2 / totalWeight;
 
-  collider1.velocity = add(
-    collider1.velocity,
+  entity1.velocity = add(
+    entity1.velocity,
     multiply(
       collider1PushVector,
       (ELASTICITY * collider2WeightRatio) / elapsedTime,
     ),
   );
-  collider2.velocity = add(
-    collider2.velocity,
+  entity2.velocity = add(
+    entity2.velocity,
     multiply(
       collider2PushVector,
       (ELASTICITY * collider1WeightRatio) / elapsedTime,

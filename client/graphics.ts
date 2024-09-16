@@ -1,3 +1,4 @@
+import { match } from "ts-pattern";
 import Two from "two.js";
 import { Texture } from "two.js/src/effects/texture";
 import { Group } from "two.js/src/group";
@@ -17,6 +18,11 @@ import {
   isPlayerAlive,
 } from "./context";
 import { getTextures, SHIP_IMAGE_SIZE } from "./graphics.textures";
+import {
+  addAuraWeapon,
+  removeAuraWeapon,
+  updateAuraWeapon,
+} from "./graphics.weapons.aura";
 import {
   addFlailWeapon,
   removeFlailWeapon,
@@ -188,12 +194,16 @@ function internalUpdatePlayer(player: Player) {
   );
   playerHealthHealth.width = healthPixels;
 
-  switch (player.weapon.type) {
-    case "flail": {
-      updateFlailWeapon(two, player.weapon, player);
-      break;
-    }
-  }
+  match(player.weapon)
+    .with({ type: "flail" }, (weapon) => {
+      assert(two, "Game not initialized");
+      updateFlailWeapon(two, weapon, player);
+    })
+    .with({ type: "aura" }, (weapon) => {
+      assert(two, "Game not initialized");
+      updateAuraWeapon(two, weapon, player);
+    })
+    .exhaustive();
 
   if (isDebugMode()) {
     const playerVelocity = two.scene.getById(playerVelocityId(player)) as Line;
@@ -254,12 +264,16 @@ function internalAddPlayer(player: Player) {
   playerGroup.id = playerGroupId(player);
   playerGroup.position.set(player.position.x, player.position.y);
 
-  switch (player.weapon.type) {
-    case "flail": {
-      addFlailWeapon(two, player.weapon, player);
-      break;
-    }
-  }
+  match(player.weapon)
+    .with({ type: "flail" }, (weapon) => {
+      assert(two, "Game not initialized");
+      addFlailWeapon(two, weapon, player);
+    })
+    .with({ type: "aura" }, (weapon) => {
+      assert(two, "Game not initialized");
+      addAuraWeapon(two, weapon, player);
+    })
+    .exhaustive();
 
   if (isDebugMode()) {
     const playerVelocity = two.makeLine(
@@ -287,12 +301,16 @@ function internalRemovePlayer(player: Player) {
 
   playerGroup.remove();
 
-  switch (player.weapon.type) {
-    case "flail": {
-      removeFlailWeapon(two, player.weapon, player);
-      break;
-    }
-  }
+  match(player.weapon)
+    .with({ type: "flail" }, (weapon) => {
+      assert(two, "Game not initialized");
+      removeFlailWeapon(two, weapon, player);
+    })
+    .with({ type: "aura" }, (weapon) => {
+      assert(two, "Game not initialized");
+      removeAuraWeapon(two, weapon, player);
+    })
+    .exhaustive();
 
   if (isDebugMode()) {
     const playerVelocity = two.scene.getById(playerVelocityId(player));
