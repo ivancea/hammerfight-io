@@ -5,15 +5,9 @@ import {
   availableInputHandlers,
   InputHandlerId,
 } from "../input/input-handler-catalog";
+import { STORAGE } from "../storage";
 import { BaseUiState } from "./ui-state";
 import { GameUiState } from "./ui-state.game";
-
-/**
- * Stores the last username entered by the user.
- *
- * This lets us pre-fill the username input field between games.
- */
-let lastUsername = "";
 
 export class FormUiState extends BaseUiState {
   usernameInput?: HTMLInputElement;
@@ -45,7 +39,7 @@ export class FormUiState extends BaseUiState {
         const bots = this.botsInput.checked;
         const debugMode = this.debugModeInput.checked;
 
-        lastUsername = username;
+        STORAGE.set(STORAGE.KEYS.UI_STATE__USERNAME, username);
 
         this.resolve(
           new GameUiState(username, inputHandlerId, weapon, bots, debugMode),
@@ -73,7 +67,8 @@ export class FormUiState extends BaseUiState {
     ) as HTMLInputElement;
 
     // Initialize controls
-    this.usernameInput.value = lastUsername;
+    this.usernameInput.value =
+      STORAGE.get(STORAGE.KEYS.UI_STATE__USERNAME) ?? "";
     this.inputModeInput.innerHTML = "";
     for (const inputHandler of availableInputHandlers) {
       const option = document.createElement("option");
