@@ -55,7 +55,7 @@ export class ElasticSearchLogger extends BaseLogger {
     const logsIndex = `${indexNamespace}_logs`;
     const statsIndex = `${indexNamespace}_stats`;
 
-    await initializeElasticSearch(client, logsIndex, statsIndex);
+    // await initializeElasticSearch(client, logsIndex, statsIndex);
 
     return new ElasticSearchLogger(client, logsIndex, statsIndex);
   }
