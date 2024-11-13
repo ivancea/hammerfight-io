@@ -29,9 +29,13 @@ export class RelativeMouseInputHandler implements InputHandler {
   ) {
     element.addEventListener("mousemove", this.onMouseMove);
     element.addEventListener("click", () => {
-      element.requestPointerLock();
+      element.requestPointerLock().catch((e: unknown) => {
+        console.error("Pointer lock failed", e);
+      });
     });
-    element.requestPointerLock();
+    element.requestPointerLock().catch((e: unknown) => {
+      console.error("Pointer lock failed", e);
+    });
 
     this.interval = setInterval(() => {
       assert(context === getContext(), "Context changed");
