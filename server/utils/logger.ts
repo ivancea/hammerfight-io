@@ -25,6 +25,7 @@ export async function initializeLogger() {
       env.ELASTIC_CLOUD_ID,
       env.ELASTIC_API_KEY,
       env.ELASTIC_INDEX_NAMESPACE,
+      env.ELASTIC_CREATE_INDICES,
     );
   }
 

@@ -2,7 +2,7 @@
 import { Client as ESClient } from "@elastic/elasticsearch";
 import {
   MappingProperty,
-  PropertyName,
+  MappingTypeMapping,
 } from "@elastic/elasticsearch/lib/api/types";
 import os from "os";
 import {
@@ -43,6 +43,7 @@ export class ElasticSearchLogger extends BaseLogger {
     cloudId: string,
     apiKey: string,
     indexNamespace: string,
+    createIndices: boolean,
   ): Promise<InternalLogger> {
     const client = new ESClient({
       cloud: {
@@ -55,7 +56,9 @@ export class ElasticSearchLogger extends BaseLogger {
     const logsIndex = `${indexNamespace}_logs`;
     const statsIndex = `${indexNamespace}_stats`;
 
-    // await initializeElasticSearch(client, logsIndex, statsIndex);
+    if (createIndices) {
+      await initializeElasticSearch(client, logsIndex, statsIndex);
+    }
 
     return new ElasticSearchLogger(client, logsIndex, statsIndex);
   }
@@ -209,7 +212,7 @@ async function initializeElasticSearch(
   logsIndex: string,
   statsIndex: string,
 ) {
-  const commonProperties = {
+  const commonProperties: MappingTypeMapping["properties"] = {
     hostname: {
       type: "keyword",
     },
@@ -219,9 +222,9 @@ async function initializeElasticSearch(
     timestamp: {
       type: "date",
     },
-  } as const;
+  };
 
-  const extraMapping = {
+  const extraMapping: MappingProperty = {
     properties: {
       player_ip: {
         type: "ip",
@@ -233,7 +236,7 @@ async function initializeElasticSearch(
         type: "keyword",
       },
     },
-  } as const;
+  };
 
   await createOrUpdateIndex(client, logsIndex, {
     ...commonProperties,
@@ -276,7 +279,7 @@ async function initializeElasticSearch(
 async function createOrUpdateIndex(
   client: ESClient,
   index: string,
-  properties: Record<PropertyName, MappingProperty>,
+  properties: MappingTypeMapping["properties"],
 ) {
   if (await client.indices.exists({ index: index })) {
     console.log(`Updating mappings for ElasticSearch "${index}" index`);
