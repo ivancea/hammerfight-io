@@ -1,3 +1,4 @@
+import * as Three from "three";
 import { match } from "ts-pattern";
 import Two from "two.js";
 import { Texture } from "two.js/src/effects/texture";
@@ -14,7 +15,18 @@ import backgroundImage from "./assets/background.jpg";
 import { getContext, getCurrentPlayer, isDebugMode, isPlayerAlive } from "./context";
 import { getTextures, SHIP_IMAGE_SIZE } from "./graphics.textures";
 import { addAuraWeapon, removeAuraWeapon, updateAuraWeapon } from "./graphics.weapons.aura";
-import { addFlailWeapon, removeFlailWeapon, updateFlailWeapon } from "./graphics.weapons.flail";
+import {
+  addFlailWeapon,
+  addFlailWeapon3D,
+  removeFlailWeapon,
+  removeFlailWeapon3D,
+  updateFlailWeapon,
+  updateFlailWeapon3D,
+} from "./graphics.weapons.flail";
+
+let scene: Three.Scene | undefined;
+let camera: Three.PerspectiveCamera | undefined;
+let renderer: Three.WebGLRenderer | undefined;
 
 let two: Two | undefined;
 let resizeObserver: ResizeObserver | undefined;
@@ -24,15 +36,22 @@ export function initializeGraphics() {
   const element = document.getElementById("game");
   assert(element, "Could not find game element");
 
+  scene = new Three.Scene();
+  camera = new Three.PerspectiveCamera(75, 1, 0.1, 1000);
+  renderer = new Three.WebGLRenderer();
+  renderer.setSize(element.clientWidth, element.clientHeight);
+  element.appendChild(renderer.domElement);
+
   two = new Two({
     type: Two.Types.canvas,
     fitted: true,
-  }).appendTo(element);
+  }) /*.appendTo(element)*/;
 
   function resizeElement() {
-    assert(two, "Game not initialized");
+    assert(two && renderer, "Game not initialized");
 
     const rect = getDomElement().getBoundingClientRect();
+    renderer.setSize(rect.width, rect.height);
     two.renderer.setSize(rect.width, rect.height);
   }
 
@@ -72,21 +91,31 @@ export function initializeGraphics() {
 
   two.play();
 
+  renderer.setAnimationLoop(() => {
+    assert(scene && renderer && camera, "Game not initialized");
+
+    // TODO: Render/Update everything
+
+    renderer.render(scene, camera);
+  });
+
   return getDomElement();
 }
 
 export function destroyGraphics() {
   resizeObserver?.disconnect();
 
-  if (!two) {
+  if (!two || !renderer) {
     return;
   }
 
   two.pause();
+  renderer.dispose();
 
   const currentElement = getDomElement();
   currentElement.parentNode?.removeChild(currentElement);
 
+  scene = camera = renderer = undefined;
   two = undefined;
 }
 
@@ -98,12 +127,14 @@ export function updateRoom(oldRoom: Room) {
   for (const oldPlayer of Object.values(oldRoom.players)) {
     if (!context.room.players[oldPlayer.id]) {
       internalRemovePlayer(oldPlayer);
+      internalRemovePlayer3D(oldPlayer);
     }
   }
 
   // Update or add new players
   for (const player of Object.values(context.room.players)) {
     internalUpdatePlayer(player);
+    internalUpdatePlayer3D(player);
   }
 
   centerPlayer();
@@ -111,6 +142,7 @@ export function updateRoom(oldRoom: Room) {
 
 export function updatePlayer(player: Player) {
   internalUpdatePlayer(player);
+  internalUpdatePlayer3D(player);
 
   centerPlayer();
 }
@@ -130,6 +162,7 @@ export function removePlayer(player: Player) {
 }
 
 export function getScreenPlayerPosition() {
+  // TODO: Remove me for 3D
   assert(two, "Game not initialized");
 
   const player = getCurrentPlayer();
@@ -148,7 +181,7 @@ export function getScreenSize() {
 }
 
 function internalUpdatePlayer(player: Player) {
-  assert(two, "Game not initialized");
+  assert(two && scene, "Game not initialized");
 
   const playerGroup = two.scene.getById(playerGroupId(player)) as Group | undefined;
   const playerBody = playerGroup?.getById(playerBodyId(player)) as Circle | undefined;
@@ -187,6 +220,37 @@ function internalUpdatePlayer(player: Player) {
     const playerVelocity = two.scene.getById(playerVelocityId(player)) as Line;
     playerVelocity.vertices[1].set(player.velocity.x, player.velocity.y);
   }
+}
+
+function internalUpdatePlayer3D(player: Player) {
+  assert(scene, "Game not initialized");
+
+  const playerGroup = scene.getObjectByName(playerGroupId(player)) as Three.Group | undefined;
+  const playerBody = playerGroup?.getObjectByName(playerBodyId(player)) as Three.Mesh | undefined;
+
+  if (!playerGroup || !playerBody) {
+    internalAddPlayer3D(player);
+    return;
+  }
+
+  playerGroup.position.set(player.position.x, player.position.y, player.position.z);
+  updateCamera3D(player);
+
+  match(player.weapon)
+    .with({ type: "flail" }, (weapon) => {
+      assert(scene, "Game not initialized");
+      updateFlailWeapon3D(scene, weapon, player);
+    })
+    .with({ type: "aura" }, (weapon) => {
+      assert(scene, "Game not initialized");
+      //updateAuraWeapon(two, weapon, player);
+    })
+    .exhaustive();
+
+  /*if (isDebugMode()) {
+    const playerVelocity = two.scene.getById(playerVelocityId(player)) as Line;
+    playerVelocity.vertices[1].set(player.velocity.x, player.velocity.y);
+  }*/
 }
 
 function internalAddPlayer(player: Player) {
@@ -256,6 +320,46 @@ function internalAddPlayer(player: Player) {
   }
 }
 
+function internalAddPlayer3D(player: Player) {
+  assert(scene, "Game not initialized");
+
+  const material = new Three.MeshBasicMaterial({ color: 0x00ff00 });
+  material.wireframe = true;
+  const playerBodyGeometry = new Three.SphereGeometry();
+  const playerBody = new Three.Mesh(playerBodyGeometry, material);
+  playerBody.name = playerBodyId(player);
+  playerBody.scale.setLength(player.radius);
+
+  const playerGroup = new Three.Group();
+  playerGroup.name = playerGroupId(player);
+  playerGroup.add(playerBody);
+  playerGroup.position.set(player.position.x, player.position.y, player.position.z);
+
+  scene.add(playerGroup);
+
+  updateCamera3D(player);
+
+  match(player.weapon)
+    .with({ type: "flail" }, (weapon) => {
+      assert(scene, "Game not initialized");
+      addFlailWeapon3D(scene, weapon, player);
+    })
+    .with({ type: "aura" }, (weapon) => {
+      assert(scene, "Game not initialized");
+      //addAuraWeapon(two, weapon, player);
+    })
+    .exhaustive();
+
+  /*if (isDebugMode()) {
+    const playerVelocity = two.makeLine(0, 0, player.velocity.x, player.velocity.y);
+    playerVelocity.id = playerVelocityId(player);
+    playerVelocity.linewidth = 1;
+    playerVelocity.stroke = "#0000FF";
+
+    playerGroup.add(playerVelocity);
+  }*/
+}
+
 function internalRemovePlayer(player: Player) {
   assert(two, "Game not initialized");
 
@@ -282,6 +386,44 @@ function internalRemovePlayer(player: Player) {
 
     playerVelocity.remove();
   }
+}
+
+function internalRemovePlayer3D(player: Player) {
+  assert(scene, "Game not initialized");
+
+  const playerGroup = scene.getObjectByName(playerGroupId(player)) as Three.Group | undefined;
+
+  assert(playerGroup, "Player group not found");
+
+  playerGroup.removeFromParent();
+
+  match(player.weapon)
+    .with({ type: "flail" }, (weapon) => {
+      assert(scene, "Game not initialized");
+      removeFlailWeapon3D(scene, weapon, player);
+    })
+    .with({ type: "aura" }, (weapon) => {
+      assert(scene, "Game not initialized");
+      // removeAuraWeapon(two, weapon, player);
+    })
+    .exhaustive();
+
+  /*if (isDebugMode()) {
+    const playerVelocity = two.scene.getById(playerVelocityId(player));
+    assert(playerVelocity, "Player velocity not found");
+
+    playerVelocity.remove();
+  }*/
+}
+
+function updateCamera3D(player: Player) {
+  if (player.id !== getContext().playerId) {
+    return;
+  }
+
+  assert(camera, "Game not initialized");
+
+  camera.position.set(player.position.x, player.position.y, player.position.z + player.radius * 20);
 }
 
 function centerPlayer() {
@@ -318,9 +460,10 @@ function centerPlayer() {
 }
 
 function getDomElement() {
-  assert(two, "Game not initialized");
+  assert(renderer, "Game not initialized");
 
-  return two.renderer.domElement as HTMLElement;
+  return renderer.domElement.parentElement as HTMLElement;
+  //return two.renderer.domElement as HTMLElement;
 }
 
 function playerGroupId(player: Player) {
