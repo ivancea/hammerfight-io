@@ -55,6 +55,7 @@ export class AbsoluteMouseInputHandler implements InputHandler {
 
   /**
    * Mouse move event handler.
+   *
    * It's an arrow function to allow removing it later, while keeping the "this" context.
    */
   onMouseMove = (event: MouseEvent) => {

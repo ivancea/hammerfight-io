@@ -59,6 +59,7 @@ export class GamepadInputHandler implements InputHandler {
 
   /**
    * No-op handler for gamepadconnected events.
+   *
    * It's an arrow function to allow removing it later, while keeping the "this" context.
    **/
   onGamepadConnected = () => {
