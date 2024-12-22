@@ -17,10 +17,7 @@ import {
   updatePlayer,
   updateRoom,
 } from "./graphics";
-import {
-  InputHandlerId,
-  makeInputHandler,
-} from "./input/input-handler-catalog";
+import { InputHandlerId, makeInputHandler } from "./input/input-handler-catalog";
 import { InputHandler } from "./input/input-handler.base";
 
 let inputHandler: InputHandler | undefined;
@@ -43,12 +40,7 @@ export function initializeGame(
 
   const htmlElement = initializeGraphics();
 
-  inputHandler = makeInputHandler(
-    inputHandlerId,
-    context,
-    htmlElement,
-    updateAcceleration,
-  );
+  inputHandler = makeInputHandler(inputHandlerId, context, htmlElement, updateAcceleration);
 }
 
 export function stopGame() {
@@ -95,11 +87,8 @@ export function updateAcceleration(acceleration: Vector) {
 
   // Only send acceleration if it changed by more than 1%
   const lastAccelerationMagnitude = magnitude(lastAcceleration);
-  const accelerationChangeMagnitude = magnitude(
-    subtract(acceleration, lastAcceleration),
-  );
-  const percentualChange =
-    accelerationChangeMagnitude / lastAccelerationMagnitude;
+  const accelerationChangeMagnitude = magnitude(subtract(acceleration, lastAcceleration));
+  const percentualChange = accelerationChangeMagnitude / lastAccelerationMagnitude;
   if (
     (lastAccelerationMagnitude === 0 && magnitude(acceleration) !== 0) ||
     percentualChange > 0.01

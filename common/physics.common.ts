@@ -1,12 +1,5 @@
 import { ELASTICITY, FRICTION_CONSTANT } from "./physics.constants";
-import {
-  add,
-  clampMagnitude,
-  magnitude,
-  multiply,
-  Vector,
-  withMagnitude,
-} from "./vector";
+import { add, clampMagnitude, magnitude, multiply, Vector, withMagnitude } from "./vector";
 
 type EntityWithPosition = {
   position: Vector;
@@ -79,10 +72,7 @@ export function handleRawCirclesCollision(
     return [0, 0];
   }
 
-  const collider2PushVector = multiply(
-    withMagnitude(separationVector, minDistance - distance),
-    2,
-  );
+  const collider2PushVector = multiply(withMagnitude(separationVector, minDistance - distance), 2);
   const collider1PushVector = multiply(collider2PushVector, -1);
 
   entity1.position = add(entity1.position, collider1PushVector);
@@ -95,17 +85,11 @@ export function handleRawCirclesCollision(
 
   entity1.velocity = add(
     entity1.velocity,
-    multiply(
-      collider1PushVector,
-      (ELASTICITY * collider2WeightRatio) / elapsedTime,
-    ),
+    multiply(collider1PushVector, (ELASTICITY * collider2WeightRatio) / elapsedTime),
   );
   entity2.velocity = add(
     entity2.velocity,
-    multiply(
-      collider2PushVector,
-      (ELASTICITY * collider1WeightRatio) / elapsedTime,
-    ),
+    multiply(collider2PushVector, (ELASTICITY * collider1WeightRatio) / elapsedTime),
   );
 
   const force = minDistance - distance;
@@ -133,15 +117,9 @@ export function handleCircleCollisionWithLimits(
   }
 
   collider.position = add(collider.position, pushVector);
-  collider.velocity = add(
-    collider.velocity,
-    multiply(pushVector, ELASTICITY / elapsedTime),
-  );
+  collider.velocity = add(collider.velocity, multiply(pushVector, ELASTICITY / elapsedTime));
 }
 
 export function applyFriction(entity: EntityWithVelocity, elapsedTime: number) {
-  entity.velocity = multiply(
-    entity.velocity,
-    Math.pow(FRICTION_CONSTANT, elapsedTime),
-  );
+  entity.velocity = multiply(entity.velocity, Math.pow(FRICTION_CONSTANT, elapsedTime));
 }

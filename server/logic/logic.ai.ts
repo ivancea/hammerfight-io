@@ -1,13 +1,7 @@
 import { AI_CONTEXT_SYMBOL, Player } from "../../common/types/player";
 import { Room } from "../../common/types/room";
 import { hashCode } from "../../common/utils";
-import {
-  add,
-  magnitude,
-  rotate,
-  subtract,
-  withMagnitude,
-} from "../../common/vector";
+import { add, magnitude, rotate, subtract, withMagnitude } from "../../common/vector";
 
 const botMessages = [
   "Come here <PLAYER_NAME>!",
@@ -28,8 +22,7 @@ export function updateBots(room: Room) {
     const currentSpeed = magnitude(bot.velocity);
 
     const currentSpeedPercentage =
-      Math.max(0, Math.min(room.maxPlayerSpeed, currentSpeed)) /
-      room.maxPlayerSpeed;
+      Math.max(0, Math.min(room.maxPlayerSpeed, currentSpeed)) / room.maxPlayerSpeed;
     const angle = (Math.PI * currentSpeedPercentage) / 1.5;
 
     let newAcceleration = withMagnitude(
@@ -40,9 +33,7 @@ export function updateBots(room: Room) {
     );
 
     if (firstPlayer) {
-      const otherBots = Object.values(room.players).filter(
-        (p) => p.isBot && p.id !== bot.id,
-      );
+      const otherBots = Object.values(room.players).filter((p) => p.isBot && p.id !== bot.id);
 
       let accelerationAgainstBots = otherBots.reduce(
         (acc, otherBot) => {
@@ -52,10 +43,7 @@ export function updateBots(room: Room) {
             return acc;
           }
 
-          return add(
-            acc,
-            withMagnitude(vectorFromOtherBot, room.maxPlayerAcceleration),
-          );
+          return add(acc, withMagnitude(vectorFromOtherBot, room.maxPlayerAcceleration));
         },
         { x: 0, y: 0 },
       );
@@ -89,10 +77,7 @@ export function updateBots(room: Room) {
 function updateBotName(bot: Player, targetPlayer: Player | undefined) {
   const millisecondsBetweenUpdates = 5000;
   const now = Date.now();
-  if (
-    (bot[AI_CONTEXT_SYMBOL]?.lastNameUpdate ?? 0) >=
-    Date.now() - millisecondsBetweenUpdates
-  ) {
+  if ((bot[AI_CONTEXT_SYMBOL]?.lastNameUpdate ?? 0) >= Date.now() - millisecondsBetweenUpdates) {
     return;
   }
 
@@ -103,9 +88,7 @@ function updateBotName(bot: Player, targetPlayer: Player | undefined) {
   }
   bot[AI_CONTEXT_SYMBOL].lastNameUpdate = now;
 
-  const offset = Math.floor(
-    hashCode(bot.id) + now / millisecondsBetweenUpdates,
-  );
+  const offset = Math.floor(hashCode(bot.id) + now / millisecondsBetweenUpdates);
 
   const botName = bot.username.split(":", 2)[0] ?? "";
   if (targetPlayer) {

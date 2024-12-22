@@ -25,10 +25,7 @@ export function moveFlailWeapon(
   const currentChainLength = magnitude(chainVector);
 
   if (currentChainLength > weapon.chainLength) {
-    const positionDelta = clampMagnitude(
-      chainVector,
-      currentChainLength - weapon.chainLength,
-    );
+    const positionDelta = clampMagnitude(chainVector, currentChainLength - weapon.chainLength);
 
     weapon.position = add(weapon.position, positionDelta);
     weapon.velocity = add(
@@ -52,11 +49,7 @@ export function handleFlailWeaponCollisions(
       continue;
     }
 
-    const [, otherPlayerDamage] = handleCirclesCollision(
-      weapon,
-      otherPlayer,
-      elapsedTime,
-    );
+    const [, otherPlayerDamage] = handleCirclesCollision(weapon, otherPlayer, elapsedTime);
 
     if (otherPlayerDamage > 0) {
       onPlayerDamage({
@@ -84,12 +77,7 @@ export function handleFlailWeaponLimitsCollisions(
   room: Room,
   elapsedTime: number,
 ) {
-  handleCircleCollisionWithLimits(
-    weapon,
-    room.size.x,
-    room.size.y,
-    elapsedTime,
-  );
+  handleCircleCollisionWithLimits(weapon, room.size.x, room.size.y, elapsedTime);
 }
 
 export function applyFrictionToFlailWeapon(

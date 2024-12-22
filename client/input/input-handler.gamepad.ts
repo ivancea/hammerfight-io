@@ -46,13 +46,7 @@ export class GamepadInputHandler implements InputHandler {
 
     const maxPlayerAcceleration = this.context.room.maxPlayerAcceleration;
 
-    const acceleration = interpolateMagnitude(
-      movement,
-      0,
-      Math.SQRT2,
-      0,
-      maxPlayerAcceleration,
-    );
+    const acceleration = interpolateMagnitude(movement, 0, Math.SQRT2, 0, maxPlayerAcceleration);
 
     this.updateAcceleration(acceleration);
   }

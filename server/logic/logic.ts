@@ -45,10 +45,7 @@ export function disconnectPlayer(player: Player) {
  */
 export function findOrCreateRoomWithSpace(roomWithBots: boolean): Room {
   for (const room of Object.values(world.rooms)) {
-    if (
-      roomWithBots !==
-      Object.values(room.players).some((player) => player.isBot)
-    ) {
+    if (roomWithBots !== Object.values(room.players).some((player) => player.isBot)) {
       continue;
     }
 
@@ -61,10 +58,7 @@ export function findOrCreateRoomWithSpace(roomWithBots: boolean): Room {
 
   world.rooms[newRoom.id] = newRoom;
 
-  assert(
-    Object.keys(newRoom.players).length < newRoom.maxPlayers,
-    "Room was created full",
-  );
+  assert(Object.keys(newRoom.players).length < newRoom.maxPlayers, "Room was created full");
 
   return newRoom;
 }

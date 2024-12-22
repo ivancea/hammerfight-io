@@ -40,13 +40,7 @@ export class VirtualJoystickInputHandler implements InputHandler {
   updateMovement(vector: Vector) {
     const maxPlayerAcceleration = this.context.room.maxPlayerAcceleration;
 
-    const acceleration = interpolateMagnitude(
-      vector,
-      0,
-      1,
-      0,
-      maxPlayerAcceleration,
-    );
+    const acceleration = interpolateMagnitude(vector, 0, 1, 0, maxPlayerAcceleration);
 
     this.updateAcceleration(acceleration);
   }

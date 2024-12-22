@@ -28,13 +28,7 @@ export function applyPhysics(
   const handledPlayerCollisions = new Set<string>();
 
   for (const player of Object.values(room.players)) {
-    handlePlayerCollisions(
-      player,
-      room,
-      handledPlayerCollisions,
-      elapsedTime,
-      onPlayerDamage,
-    );
+    handlePlayerCollisions(player, room, handledPlayerCollisions, elapsedTime, onPlayerDamage);
     handleWeaponCollisions(player, room, elapsedTime, onPlayerDamage);
   }
 

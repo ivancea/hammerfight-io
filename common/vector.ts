@@ -73,13 +73,9 @@ export function interpolateMagnitude(
 
   const sourceMagnitudeRange = maxSourceMagnitude - minSourceMagnitude;
   const targetMagnitudeRange = maxTargetMagnitude - minTargetMagnitude;
-  const magnitudePercent =
-    (vectorMagnitude - minSourceMagnitude) / sourceMagnitudeRange;
+  const magnitudePercent = (vectorMagnitude - minSourceMagnitude) / sourceMagnitudeRange;
 
-  return withMagnitude(
-    vector,
-    minTargetMagnitude + targetMagnitudeRange * magnitudePercent,
-  );
+  return withMagnitude(vector, minTargetMagnitude + targetMagnitudeRange * magnitudePercent);
 }
 
 export function clampMagnitude(vector: Vector, maxMagnitude: number) {
@@ -95,13 +91,7 @@ export function clampMagnitude(vector: Vector, maxMagnitude: number) {
   };
 }
 
-export function clamp(
-  vector: Vector,
-  minX: number,
-  maxX: number,
-  minY: number,
-  maxY: number,
-) {
+export function clamp(vector: Vector, minX: number, maxX: number, minY: number, maxY: number) {
   return {
     x: Math.min(maxX, Math.max(minX, vector.x)),
     y: Math.min(maxY, Math.max(minY, vector.y)),

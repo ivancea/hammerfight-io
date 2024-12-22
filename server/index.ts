@@ -43,14 +43,11 @@ async function startServer() {
         event.weapon,
       );
 
-      getLogger().info(
-        `User ${socket.id} with name "${event.username}" joined room ${room.id}`,
-        {
-          player_ip: clientIp,
-          player_id: player.id,
-          room_id: `${room.id}`,
-        },
-      );
+      getLogger().info(`User ${socket.id} with name "${event.username}" joined room ${room.id}`, {
+        player_ip: clientIp,
+        player_id: player.id,
+        room_id: `${room.id}`,
+      });
 
       callback(room, player);
 
@@ -75,10 +72,7 @@ async function startServer() {
 
       const room = getRoom(player);
 
-      player.acceleration = clampMagnitude(
-        event.acceleration,
-        room.maxPlayerAcceleration,
-      );
+      player.acceleration = clampMagnitude(event.acceleration, room.maxPlayerAcceleration);
 
       // TODO: Should we send this? Just sending roomUpdated may be enough
       // server.broadcastRoom(room).emit("playerUpdated", { player });

@@ -30,10 +30,7 @@ export type Logger = {
   /**
    * Same as `stats`, but it measures the time it takes to execute the callback.
    */
-  statsFunction<T>(
-    statsRequest: Omit<StatsRequest, "value">,
-    callback: () => T,
-  ): T;
+  statsFunction<T>(statsRequest: Omit<StatsRequest, "value">, callback: () => T): T;
 };
 
 export type InternalLogger = Logger & {
@@ -51,10 +48,7 @@ export abstract class BaseLogger implements Logger {
 
   abstract destroy(): void;
 
-  statsFunction<T>(
-    statsRequest: Omit<StatsRequest, "value">,
-    callback: () => T,
-  ): T {
+  statsFunction<T>(statsRequest: Omit<StatsRequest, "value">, callback: () => T): T {
     const stopWatch = new StopWatch();
     const result = callback();
     this.stats({ ...statsRequest, value: stopWatch.next() });

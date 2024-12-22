@@ -6,9 +6,6 @@ export function assert(condition: unknown, message: string): asserts condition {
   }
 }
 
-export function assertNotNull<T>(
-  value: T,
-  message: string,
-): asserts value is NonNullable<T> {
+export function assertNotNull<T>(value: T, message: string): asserts value is NonNullable<T> {
   assert(value != null, message);
 }

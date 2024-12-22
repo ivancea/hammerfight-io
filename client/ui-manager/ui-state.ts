@@ -72,10 +72,7 @@ export abstract class BaseUiState implements UiState {
     const template = document.getElementById(templateId) as HTMLTemplateElement;
     assert(template, `Template "${templateId}" not found`);
     assert(
-      Object.prototype.isPrototypeOf.call(
-        HTMLTemplateElement.prototype,
-        template,
-      ),
+      Object.prototype.isPrototypeOf.call(HTMLTemplateElement.prototype, template),
       `Element "${templateId}" is not a template`,
     );
 

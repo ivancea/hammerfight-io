@@ -13,14 +13,10 @@ export function movePlayer(player: Player, room: Room, elapsedTime: number) {
   const acceleration = {
     x:
       player.acceleration.x *
-      Math.log2(
-        Math.max(2, Math.abs(player.acceleration.x - player.velocity.x) / 2),
-      ),
+      Math.log2(Math.max(2, Math.abs(player.acceleration.x - player.velocity.x) / 2)),
     y:
       player.acceleration.y *
-      Math.log2(
-        Math.max(2, Math.abs(player.acceleration.y - player.velocity.y) / 2),
-      ),
+      Math.log2(Math.max(2, Math.abs(player.acceleration.y - player.velocity.y) / 2)),
   };
 
   moveWithAcceleration(player, acceleration, room.maxPlayerSpeed, elapsedTime);
@@ -69,23 +65,10 @@ export function handlePlayerCollisions(
   }
 }
 
-export function handlePlayerLimitsCollisions(
-  player: Player,
-  room: Room,
-  elapsedTime: number,
-) {
-  handleCircleCollisionWithLimits(
-    player,
-    room.size.x,
-    room.size.y,
-    elapsedTime,
-  );
+export function handlePlayerLimitsCollisions(player: Player, room: Room, elapsedTime: number) {
+  handleCircleCollisionWithLimits(player, room.size.x, room.size.y, elapsedTime);
 }
 
-export function applyFrictionToPlayer(
-  player: Player,
-  room: Room,
-  elapsedTime: number,
-) {
+export function applyFrictionToPlayer(player: Player, room: Room, elapsedTime: number) {
   applyFriction(player, elapsedTime);
 }

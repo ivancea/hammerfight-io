@@ -37,6 +37,4 @@ export type SocketIoServerSentEvents = {
   }>;
 };
 
-type EventWith<T> = T extends unknown[]
-  ? (...params: T) => void
-  : (data: T) => void;
+type EventWith<T> = T extends unknown[] ? (...params: T) => void : (data: T) => void;

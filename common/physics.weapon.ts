@@ -29,31 +29,15 @@ export function handleWeaponCollisions(
 ) {
   match(player.weapon)
     .with({ type: "flail" }, (weapon) => {
-      handleFlailWeaponCollisions(
-        weapon,
-        player,
-        room,
-        elapsedTime,
-        onPlayerDamage,
-      );
+      handleFlailWeaponCollisions(weapon, player, room, elapsedTime, onPlayerDamage);
     })
     .with({ type: "aura" }, (weapon) => {
-      handleAuraWeaponCollisions(
-        weapon,
-        player,
-        room,
-        elapsedTime,
-        onPlayerDamage,
-      );
+      handleAuraWeaponCollisions(weapon, player, room, elapsedTime, onPlayerDamage);
     })
     .exhaustive();
 }
 
-export function handleWeaponLimitsCollisions(
-  player: Player,
-  room: Room,
-  elapsedTime: number,
-) {
+export function handleWeaponLimitsCollisions(player: Player, room: Room, elapsedTime: number) {
   match(player.weapon)
     .with({ type: "flail" }, (weapon) => {
       handleFlailWeaponLimitsCollisions(weapon, player, room, elapsedTime);
@@ -64,11 +48,7 @@ export function handleWeaponLimitsCollisions(
     .exhaustive();
 }
 
-export function applyFrictionToWeapon(
-  player: Player,
-  room: Room,
-  elapsedTime: number,
-) {
+export function applyFrictionToWeapon(player: Player, room: Room, elapsedTime: number) {
   match(player.weapon)
     .with({ type: "flail" }, (weapon) => {
       applyFrictionToFlailWeapon(weapon, player, room, elapsedTime);

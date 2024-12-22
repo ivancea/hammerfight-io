@@ -12,12 +12,7 @@
         <div class="form-fields">
           <span>
             <label for="username">Username</label>
-            <input
-              id="username"
-              name="username"
-              type="text"
-              placeholder="Username"
-            />
+            <input id="username" name="username" type="text" placeholder="Username" />
           </span>
           <span>
             <label for="input-mode">Input mode</label>
@@ -36,9 +31,7 @@
             <input id="debug-mode" name="debug-mode" type="checkbox" />
           </span>
           <span class="submit">
-            <button id="room-selection-form-submit" type="button">
-              Join room
-            </button>
+            <button id="room-selection-form-submit" type="button">Join room</button>
           </span>
         </div>
       </div>
@@ -46,12 +39,7 @@
 
     <div id="game"></div>
     <div
-      style="
-        font-size: small;
-        display: flex;
-        flex-direction: row;
-        justify-content: space-between;
-      "
+      style="font-size: small; display: flex; flex-direction: row; justify-content: space-between"
     >
       <span>Version <%= htmlWebpackPlugin.options.appVersion %></span>
       <span

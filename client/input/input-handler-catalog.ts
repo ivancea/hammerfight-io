@@ -27,13 +27,8 @@ export function makeInputHandler(
   htmlElement: HTMLElement,
   updateAcceleration: (newAcceleration: Vector) => void,
 ) {
-  const inputHandler = availableInputHandlers.find(
-    (handler) => handler.id === inputHandlerId,
-  );
-  assert(
-    inputHandler,
-    `Unknown input handler or not available: ${inputHandlerId}`,
-  );
+  const inputHandler = availableInputHandlers.find((handler) => handler.id === inputHandlerId);
+  assert(inputHandler, `Unknown input handler or not available: ${inputHandlerId}`);
 
   return new inputHandler(context, htmlElement, updateAcceleration);
 }

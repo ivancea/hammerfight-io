@@ -16,12 +16,7 @@ export default (env) => {
   } else {
     const gitCommit = childProcess.execSync("git rev-parse HEAD").toString();
     const commitDate = new Date(
-      Number(
-        childProcess
-          .execSync("git show -s --format=%ct HEAD")
-          .toString()
-          .trim(),
-      ) * 1000,
+      Number(childProcess.execSync("git show -s --format=%ct HEAD").toString().trim()) * 1000,
     );
 
     appVersion = `dev-${gitCommit.slice(0, 7)} - ${commitDate.toISOString()}`;
@@ -34,10 +29,7 @@ export default (env) => {
         {
           test: /\.ts$/,
           use: "ts-loader",
-          include: [
-            path.resolve(__dirname, "client"),
-            path.resolve(__dirname, "common"),
-          ],
+          include: [path.resolve(__dirname, "client"), path.resolve(__dirname, "common")],
         },
         {
           test: /\.s?css$/,

@@ -11,23 +11,10 @@ import { Player } from "../common/types/player";
 import { Room } from "../common/types/room";
 import { hashCode } from "../common/utils";
 import backgroundImage from "./assets/background.jpg";
-import {
-  getContext,
-  getCurrentPlayer,
-  isDebugMode,
-  isPlayerAlive,
-} from "./context";
+import { getContext, getCurrentPlayer, isDebugMode, isPlayerAlive } from "./context";
 import { getTextures, SHIP_IMAGE_SIZE } from "./graphics.textures";
-import {
-  addAuraWeapon,
-  removeAuraWeapon,
-  updateAuraWeapon,
-} from "./graphics.weapons.aura";
-import {
-  addFlailWeapon,
-  removeFlailWeapon,
-  updateFlailWeapon,
-} from "./graphics.weapons.flail";
+import { addAuraWeapon, removeAuraWeapon, updateAuraWeapon } from "./graphics.weapons.aura";
+import { addFlailWeapon, removeFlailWeapon, updateFlailWeapon } from "./graphics.weapons.flail";
 
 let two: Two | undefined;
 let resizeObserver: ResizeObserver | undefined;
@@ -163,18 +150,12 @@ export function getScreenSize() {
 function internalUpdatePlayer(player: Player) {
   assert(two, "Game not initialized");
 
-  const playerGroup = two.scene.getById(playerGroupId(player)) as
-    | Group
+  const playerGroup = two.scene.getById(playerGroupId(player)) as Group | undefined;
+  const playerBody = playerGroup?.getById(playerBodyId(player)) as Circle | undefined;
+  const playerName = playerGroup?.getById(playerNameId(player)) as Text | undefined;
+  const playerHealthHealth = playerGroup?.getById(playerHealthHealthId(player)) as
+    | Rectangle
     | undefined;
-  const playerBody = playerGroup?.getById(playerBodyId(player)) as
-    | Circle
-    | undefined;
-  const playerName = playerGroup?.getById(playerNameId(player)) as
-    | Text
-    | undefined;
-  const playerHealthHealth = playerGroup?.getById(
-    playerHealthHealthId(player),
-  ) as Rectangle | undefined;
 
   if (!playerGroup || !playerBody || !playerName || !playerHealthHealth) {
     internalAddPlayer(player);
@@ -188,10 +169,7 @@ function internalUpdatePlayer(player: Player) {
   const healthPercentage = player.health / player.maxHealth;
   const totalHealthPixels = player.radius * 2 - 2;
   const healthPixels = Math.ceil(totalHealthPixels * healthPercentage);
-  playerHealthHealth.position.set(
-    -(totalHealthPixels - healthPixels) / 2,
-    -player.radius - 5,
-  );
+  playerHealthHealth.position.set(-(totalHealthPixels - healthPixels) / 2, -player.radius - 5);
   playerHealthHealth.width = healthPixels;
 
   match(player.weapon)
@@ -219,9 +197,7 @@ function internalAddPlayer(player: Player) {
   playerBody.scale = (player.radius * 2) / SHIP_IMAGE_SIZE;
   playerBody.noStroke();
   const shipTextures = getTextures(two).ships;
-  playerBody.fill = shipTextures[
-    hashCode(player.id) % shipTextures.length
-  ] as Texture;
+  playerBody.fill = shipTextures[hashCode(player.id) % shipTextures.length] as Texture;
 
   const playerName = two.makeText(
     player.username,
@@ -232,12 +208,7 @@ function internalAddPlayer(player: Player) {
   playerName.size = 16;
   playerName.weight = 700;
 
-  const playerHealthBackground = two.makeRectangle(
-    0,
-    -player.radius - 5,
-    player.radius * 2,
-    6,
-  );
+  const playerHealthBackground = two.makeRectangle(0, -player.radius - 5, player.radius * 2, 6);
   playerHealthBackground.id = playerHealthBackgroundId(player);
   playerHealthBackground.fill = "#111111";
   playerHealthBackground.noStroke();
@@ -276,12 +247,7 @@ function internalAddPlayer(player: Player) {
     .exhaustive();
 
   if (isDebugMode()) {
-    const playerVelocity = two.makeLine(
-      0,
-      0,
-      player.velocity.x,
-      player.velocity.y,
-    );
+    const playerVelocity = two.makeLine(0, 0, player.velocity.x, player.velocity.y);
     playerVelocity.id = playerVelocityId(player);
     playerVelocity.linewidth = 1;
     playerVelocity.stroke = "#0000FF";
@@ -293,9 +259,7 @@ function internalAddPlayer(player: Player) {
 function internalRemovePlayer(player: Player) {
   assert(two, "Game not initialized");
 
-  const playerGroup = two.scene.getById(playerGroupId(player)) as
-    | Group
-    | undefined;
+  const playerGroup = two.scene.getById(playerGroupId(player)) as Group | undefined;
 
   assert(playerGroup, "Player group not found");
 

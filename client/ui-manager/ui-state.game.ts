@@ -101,13 +101,7 @@ export class GameUiState extends BaseUiState {
         assert(this.socket, "Socket should be defined");
         console.log(`Joined room ${room.id} as player ${player.id}`, room);
 
-        initializeGame(
-          this.socket,
-          room,
-          player,
-          this.inputHandlerId,
-          this.debugMode,
-        );
+        initializeGame(this.socket, room, player, this.inputHandlerId, this.debugMode);
       },
     );
   }

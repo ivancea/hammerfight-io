@@ -37,12 +37,6 @@ export class LoadTestRoom extends BaseRoomController {
       y: room.size.y / 2,
     };
 
-    room.players[botId] = makeBot(
-      botId,
-      room.id,
-      botName,
-      position,
-      makeFlailWeapon(position),
-    );
+    room.players[botId] = makeBot(botId, room.id, botName, position, makeFlailWeapon(position));
   }
 }

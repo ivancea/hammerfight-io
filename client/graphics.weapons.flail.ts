@@ -7,11 +7,7 @@ import { isDebugMode } from "./context";
 import { FLAIL_IMAGE_SIZE, getTextures } from "./graphics.textures";
 
 export function addFlailWeapon(two: Two, weapon: FlailWeapon, player: Player) {
-  const flailHead = two.makeCircle(
-    weapon.position.x,
-    weapon.position.y,
-    FLAIL_IMAGE_SIZE / 2,
-  );
+  const flailHead = two.makeCircle(weapon.position.x, weapon.position.y, FLAIL_IMAGE_SIZE / 2);
   flailHead.id = flailHeadId(player);
   flailHead.scale = (weapon.radius * 2) / FLAIL_IMAGE_SIZE;
   flailHead.noStroke();
@@ -40,15 +36,9 @@ export function addFlailWeapon(two: Two, weapon: FlailWeapon, player: Player) {
   }
 }
 
-export function updateFlailWeapon(
-  two: Two,
-  weapon: FlailWeapon,
-  player: Player,
-) {
+export function updateFlailWeapon(two: Two, weapon: FlailWeapon, player: Player) {
   const flailHead = two.scene.getById(flailHeadId(player));
-  const flailChain = two.scene.getById(flailChainId(player)) as
-    | Line
-    | undefined;
+  const flailChain = two.scene.getById(flailChainId(player)) as Line | undefined;
   assert(flailHead, "Flail head not found");
   assert(flailChain, "Flail chain not found");
 
@@ -67,11 +57,7 @@ export function updateFlailWeapon(
   }
 }
 
-export function removeFlailWeapon(
-  two: Two,
-  weapon: FlailWeapon,
-  player: Player,
-) {
+export function removeFlailWeapon(two: Two, weapon: FlailWeapon, player: Player) {
   const flailHead = two.scene.getById(flailHeadId(player));
   const flailChain = two.scene.getById(flailChainId(player));
   assert(flailHead, "Flail head not found");

@@ -15,11 +15,7 @@ export async function initializeLogger() {
 
   let newLogger: InternalLogger | undefined;
 
-  if (
-    env.ELASTIC_CLOUD_ID &&
-    env.ELASTIC_API_KEY &&
-    env.ELASTIC_INDEX_NAMESPACE
-  ) {
+  if (env.ELASTIC_CLOUD_ID && env.ELASTIC_API_KEY && env.ELASTIC_INDEX_NAMESPACE) {
     console.log("Using ElasticSearch logger");
     newLogger = await ElasticSearchLogger.create(
       env.ELASTIC_CLOUD_ID,

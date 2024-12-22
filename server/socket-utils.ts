@@ -30,9 +30,7 @@ function getXForwardedFor(socket: Socket) {
 function getForwarded(socket: Socket) {
   try {
     const forwardedHeader = socket.handshake.headers["forwarded"];
-    return forwardedHeader
-      ? forwardedParse(forwardedHeader)[0]?.for
-      : undefined;
+    return forwardedHeader ? forwardedParse(forwardedHeader)[0]?.for : undefined;
   } catch {
     return undefined;
   }

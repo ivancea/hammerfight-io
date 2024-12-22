@@ -23,10 +23,7 @@ export default tseslint.config(
     files: ["**/*.ts"],
     rules: {
       "@typescript-eslint/no-dynamic-delete": "off",
-      "@typescript-eslint/restrict-template-expressions": [
-        "error",
-        { allowNumber: true },
-      ],
+      "@typescript-eslint/restrict-template-expressions": ["error", { allowNumber: true }],
       "@typescript-eslint/no-unused-vars": "warn",
       "@typescript-eslint/no-unsafe-call": "warn",
       "@typescript-eslint/no-unsafe-member-access": "warn",

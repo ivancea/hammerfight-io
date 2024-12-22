@@ -4,11 +4,7 @@ import { assert } from "../../common/errors";
 import { applyPhysics } from "../../common/physics";
 import { makePlayer, Player } from "../../common/types/player";
 import { Room } from "../../common/types/room";
-import {
-  makeAuraWeapon,
-  makeFlailWeapon,
-  WeaponType,
-} from "../../common/types/weapon";
+import { makeAuraWeapon, makeFlailWeapon, WeaponType } from "../../common/types/weapon";
 import { divide } from "../../common/vector";
 import { server, Socket } from "../server";
 import { getLogger } from "../utils/logger";
@@ -18,11 +14,7 @@ import { updateBots } from "./logic.ai";
 export type RoomController = {
   room: Room;
 
-  joinPlayer(
-    socket: Socket,
-    username: string,
-    weapon: WeaponType,
-  ): Promise<Player>;
+  joinPlayer(socket: Socket, username: string, weapon: WeaponType): Promise<Player>;
   disconnectPlayer(player: Player): void;
   updateRoom(elapsedTime: number): void;
   destroy(): void;
@@ -113,10 +105,7 @@ export class BaseRoomController implements RoomController {
       const damagedPlayer = this.room.players[damage.damagedPlayerId];
       assert(damagedPlayer, "Damaged player not found");
 
-      if (
-        damage.type === "playerCollision" &&
-        damagedPlayer.weapon.type === "aura"
-      ) {
+      if (damage.type === "playerCollision" && damagedPlayer.weapon.type === "aura") {
         // Players with aura weapons are immune to player collisions
         continue;
       }
@@ -135,9 +124,7 @@ export class BaseRoomController implements RoomController {
       const deadPlayer = this.room.players[deadPlayerId];
       assert(deadPlayer, "Damaged player not found");
 
-      server
-        .broadcastRoom(this.room)
-        .emit("playerDied", { player: deadPlayer });
+      server.broadcastRoom(this.room).emit("playerDied", { player: deadPlayer });
 
       this.disconnectPlayer(deadPlayer);
     }

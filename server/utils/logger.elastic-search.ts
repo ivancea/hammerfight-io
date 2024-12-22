@@ -1,17 +1,8 @@
 /* eslint-disable no-console */
 import { Client as ESClient } from "@elastic/elasticsearch";
-import {
-  MappingProperty,
-  MappingTypeMapping,
-} from "@elastic/elasticsearch/lib/api/types";
+import { MappingProperty, MappingTypeMapping } from "@elastic/elasticsearch/lib/api/types";
 import os from "os";
-import {
-  BaseLogger,
-  Extra,
-  InternalLogger,
-  LOGGER_MODULE,
-  StatsRequest,
-} from "./logger.base";
+import { BaseLogger, Extra, InternalLogger, LOGGER_MODULE, StatsRequest } from "./logger.base";
 
 export class ElasticSearchLogger extends BaseLogger {
   readonly bufferLimit = 1000;
@@ -106,10 +97,7 @@ export class ElasticSearchLogger extends BaseLogger {
 
     this.client
       .bulk({
-        operations: buffer.flatMap((log) => [
-          { index: { _index: index } },
-          log,
-        ]),
+        operations: buffer.flatMap((log) => [{ index: { _index: index } }, log]),
       })
       .then((response) => {
         if (response.errors) {
@@ -122,10 +110,7 @@ export class ElasticSearchLogger extends BaseLogger {
         }
       })
       .catch((error: unknown) => {
-        console.error(
-          `Error sending logs to ElasticSearch index ${index}`,
-          error,
-        );
+        console.error(`Error sending logs to ElasticSearch index ${index}`, error);
       });
 
     buffer.length = 0;
@@ -149,11 +134,7 @@ export class ElasticSearchLogger extends BaseLogger {
     this.flush(this.statsIndex, this.statsBuffer);
   }
 
-  private addLog(
-    level: "info" | "warn" | "error",
-    message: string,
-    extra?: Extra,
-  ) {
+  private addLog(level: "info" | "warn" | "error", message: string, extra?: Extra) {
     this.logsBuffer.push({
       hostname: this.hostname,
       module: LOGGER_MODULE,
@@ -207,11 +188,7 @@ function statsFrom(requests: StatsRequest[]): Stats {
   return { sum, avg, max, min, count: values.length };
 }
 
-async function initializeElasticSearch(
-  client: ESClient,
-  logsIndex: string,
-  statsIndex: string,
-) {
+async function initializeElasticSearch(client: ESClient, logsIndex: string, statsIndex: string) {
   const commonProperties: MappingTypeMapping["properties"] = {
     hostname: {
       type: "keyword",

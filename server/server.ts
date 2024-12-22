@@ -2,17 +2,10 @@ import compression from "compression";
 import express from "express";
 import http from "node:http";
 import https from "node:https";
-import {
-  RemoteSocket,
-  Server as SocketIoServer,
-  Socket as SocketIoSocket,
-} from "socket.io";
+import { RemoteSocket, Server as SocketIoServer, Socket as SocketIoSocket } from "socket.io";
 import { assert } from "../common/errors";
 import { Room } from "../common/types/room";
-import {
-  SocketIoClientSentEvents,
-  SocketIoServerSentEvents,
-} from "../common/types/socket-io";
+import { SocketIoClientSentEvents, SocketIoServerSentEvents } from "../common/types/socket-io";
 import { joinUrl } from "../common/urls";
 import { env } from "./env";
 import { getLogger } from "./utils/logger";

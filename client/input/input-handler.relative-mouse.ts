@@ -45,10 +45,8 @@ export class RelativeMouseInputHandler implements InputHandler {
   }
 
   updateMovement(mouseMovement: Vector) {
-    this.accumulatedMovement.x =
-      mouseMovement.x + this.accumulatedMovement.x * 0.5;
-    this.accumulatedMovement.y =
-      mouseMovement.y + this.accumulatedMovement.y * 0.5;
+    this.accumulatedMovement.x = mouseMovement.x + this.accumulatedMovement.x * 0.5;
+    this.accumulatedMovement.y = mouseMovement.y + this.accumulatedMovement.y * 0.5;
 
     if (magnitude(this.accumulatedMovement) <= 1) {
       this.updateAcceleration(this.accumulatedMovement);

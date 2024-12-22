@@ -1,10 +1,7 @@
 import { Socket } from "socket.io-client";
 import { assert } from "../common/errors";
 import { Room } from "../common/types/room";
-import {
-  SocketIoClientSentEvents,
-  SocketIoServerSentEvents,
-} from "../common/types/socket-io";
+import { SocketIoClientSentEvents, SocketIoServerSentEvents } from "../common/types/socket-io";
 
 export type Context = {
   socket: Socket<SocketIoServerSentEvents, SocketIoClientSentEvents>;
