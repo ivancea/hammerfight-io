@@ -40,6 +40,10 @@ export class FormUiState extends BaseUiState {
         const debugMode = this.debugModeInput.checked;
 
         STORAGE.set(STORAGE.KEYS.UI_STATE__USERNAME, username);
+        STORAGE.set(STORAGE.KEYS.UI_STATE__INPUT_HANDLER_ID, inputHandlerId);
+        STORAGE.set(STORAGE.KEYS.UI_STATE__WEAPON, weapon);
+        STORAGE.set(STORAGE.KEYS.UI_STATE__BOTS, bots.toString());
+        STORAGE.set(STORAGE.KEYS.UI_STATE__DEBUG_MODE, debugMode.toString());
 
         this.resolve(
           new GameUiState(username, inputHandlerId, weapon, bots, debugMode),
@@ -67,8 +71,6 @@ export class FormUiState extends BaseUiState {
     ) as HTMLInputElement;
 
     // Initialize controls
-    this.usernameInput.value =
-      STORAGE.get(STORAGE.KEYS.UI_STATE__USERNAME) ?? "";
     this.inputModeInput.innerHTML = "";
     for (const inputHandler of availableInputHandlers) {
       const option = document.createElement("option");
@@ -83,6 +85,17 @@ export class FormUiState extends BaseUiState {
       option.text = capitalize(weaponType);
       this.weaponInput.add(option);
     }
+
+    // Set values
+    this.usernameInput.value =
+      STORAGE.get(STORAGE.KEYS.UI_STATE__USERNAME) ?? "";
+    this.inputModeInput.value =
+      STORAGE.get(STORAGE.KEYS.UI_STATE__INPUT_HANDLER_ID) ?? "";
+    this.weaponInput.value = STORAGE.get(STORAGE.KEYS.UI_STATE__WEAPON) ?? "";
+    this.botsInput.checked =
+      STORAGE.get(STORAGE.KEYS.UI_STATE__BOTS) !== "false";
+    this.debugModeInput.checked =
+      STORAGE.get(STORAGE.KEYS.UI_STATE__DEBUG_MODE) === "true";
   }
 
   doExit() {}
