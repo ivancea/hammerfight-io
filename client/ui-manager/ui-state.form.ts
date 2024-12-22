@@ -75,8 +75,16 @@ export class FormUiState extends BaseUiState {
 
     // Set values
     this.usernameInput.value = STORAGE.get(STORAGE.KEYS.UI_STATE__USERNAME) ?? "";
-    this.inputModeInput.value = STORAGE.get(STORAGE.KEYS.UI_STATE__INPUT_HANDLER_ID) ?? "";
-    this.weaponInput.value = STORAGE.get(STORAGE.KEYS.UI_STATE__WEAPON) ?? "";
+    if (
+      availableInputHandlers
+        .map((ih) => ih.id)
+        .includes(STORAGE.get(STORAGE.KEYS.UI_STATE__INPUT_HANDLER_ID) as InputHandlerId)
+    ) {
+      this.inputModeInput.value = STORAGE.get(STORAGE.KEYS.UI_STATE__INPUT_HANDLER_ID) ?? "";
+    }
+    if (WEAPON_TYPES.includes(STORAGE.get(STORAGE.KEYS.UI_STATE__WEAPON) as WeaponType)) {
+      this.weaponInput.value = STORAGE.get(STORAGE.KEYS.UI_STATE__WEAPON) ?? "";
+    }
     this.botsInput.checked = STORAGE.get(STORAGE.KEYS.UI_STATE__BOTS) !== "false";
     this.debugModeInput.checked = STORAGE.get(STORAGE.KEYS.UI_STATE__DEBUG_MODE) === "true";
   }
