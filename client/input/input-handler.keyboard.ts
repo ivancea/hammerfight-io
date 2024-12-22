@@ -32,7 +32,7 @@ export class KeyboardInputHandler implements InputHandler {
     const yAcc = (this.downKeyPressed ? 1 : 0) - (this.upKeyPressed ? 1 : 0);
 
     if (xAcc === 0 && yAcc === 0) {
-      this.updateAcceleration({ x: 0, y: 0 });
+      this.updateAcceleration({ x: 0, y: 0, z: 0 });
       return;
     }
 
@@ -40,6 +40,7 @@ export class KeyboardInputHandler implements InputHandler {
       {
         x: xAcc,
         y: yAcc,
+        z: 0, // TODO: Handle Z axis
       },
       this.context.room.maxPlayerAcceleration,
     );

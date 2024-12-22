@@ -26,8 +26,8 @@ export class BaseRoomController implements RoomController {
       id: roomId,
       maxPlayers: 5,
       players: {},
-      size: { x: 2000, y: 2000 },
-      gravity: { x: 0, y: 200 },
+      size: { x: 2000, y: 2000, z: 2000 },
+      gravity: { x: 0, y: 200, z: 0 },
       maxPlayerSpeed: 500,
       maxPlayerAcceleration: 400,
     };

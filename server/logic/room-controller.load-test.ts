@@ -11,7 +11,7 @@ export class LoadTestRoom extends BaseRoomController {
     const room = {
       ...BaseRoomController.makeRoom(world.nextRoomId++),
       maxPlayers: botCount + 1,
-      size: { x: 1000 * botCount, y: 1000 },
+      size: { x: 1000 * botCount, y: 1000, z: 1000 },
     };
 
     for (let i = 1; i <= botCount; i++) {
@@ -35,6 +35,7 @@ export class LoadTestRoom extends BaseRoomController {
     const position = {
       x: (room.size.x / (botCount + 1)) * botNumber,
       y: room.size.y / 2,
+      z: room.size.y / 2,
     };
 
     room.players[botId] = makeBot(botId, room.id, botName, position, makeFlailWeapon(position));

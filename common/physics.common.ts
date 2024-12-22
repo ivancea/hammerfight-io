@@ -63,6 +63,7 @@ export function handleRawCirclesCollision(
   const separationVector = {
     x: entity2.position.x - entity1.position.x,
     y: entity2.position.y - entity1.position.y,
+    z: entity2.position.z - entity1.position.z,
   };
 
   const distance = magnitude(separationVector);
@@ -102,7 +103,7 @@ export function handleCircleCollisionWithLimits(
   height: number,
   elapsedTime: number,
 ) {
-  const pushVector = { x: 0, y: 0 };
+  const pushVector = { x: 0, y: 0, z: 0 };
 
   if (collider.position.x - collider.radius < 0) {
     pushVector.x = collider.radius - collider.position.x;
@@ -114,6 +115,12 @@ export function handleCircleCollisionWithLimits(
     pushVector.y = collider.radius - collider.position.y;
   } else if (collider.position.y + collider.radius > height) {
     pushVector.y = height - collider.position.y - collider.radius;
+  }
+
+  if (collider.position.z - collider.radius < 0) {
+    pushVector.z = collider.radius - collider.position.z;
+  } else if (collider.position.z + collider.radius > height) {
+    pushVector.z = height - collider.position.z - collider.radius;
   }
 
   collider.position = add(collider.position, pushVector);

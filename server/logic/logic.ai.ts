@@ -27,7 +27,7 @@ export function updateBots(room: Room) {
 
     let newAcceleration = withMagnitude(
       currentSpeed === 0
-        ? { x: Math.random() - 0.5, y: Math.random() - 0.5 }
+        ? { x: Math.random() - 0.5, y: Math.random() - 0.5, z: 0 } // TODO: Handle Z axis
         : rotate(bot.velocity, angle),
       room.maxPlayerAcceleration,
     );
@@ -45,7 +45,7 @@ export function updateBots(room: Room) {
 
           return add(acc, withMagnitude(vectorFromOtherBot, room.maxPlayerAcceleration));
         },
-        { x: 0, y: 0 },
+        { x: 0, y: 0, z: 0 },
       );
 
       if (accelerationAgainstBots.x !== 0 || accelerationAgainstBots.y !== 0) {

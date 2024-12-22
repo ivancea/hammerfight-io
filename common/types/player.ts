@@ -89,8 +89,8 @@ export function makePlayer(
     radius: 20,
     weight: 50,
     position,
-    velocity: { x: 0, y: 0 },
-    acceleration: { x: 0, y: 0 },
+    velocity: { x: 0, y: 0, z: 0 },
+    acceleration: { x: 0, y: 0, z: 0 },
     weapon,
   };
 }
@@ -113,8 +113,8 @@ export function makeBot(
     radius: 20,
     weight: 50,
     position,
-    velocity: { x: 0, y: 0 },
-    acceleration: { x: 0, y: 0 },
+    velocity: { x: 0, y: 0, z: 0 },
+    acceleration: { x: 0, y: 0, z: 0 },
     weapon,
   };
 }

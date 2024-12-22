@@ -13,6 +13,7 @@ export class BotsRoom extends BaseRoomController {
       const position = {
         x: (room.size.x / (botCount + 1)) * (i + 1),
         y: room.size.y / 2,
+        z: 0,
       };
 
       room.players[botId] = makeBot(botId, room.id, botName, position, makeFlailWeapon(position));

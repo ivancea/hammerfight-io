@@ -17,6 +17,9 @@ export function movePlayer(player: Player, room: Room, elapsedTime: number) {
     y:
       player.acceleration.y *
       Math.log2(Math.max(2, Math.abs(player.acceleration.y - player.velocity.y) / 2)),
+    z:
+      player.acceleration.z *
+      Math.log2(Math.max(2, Math.abs(player.acceleration.z - player.velocity.z) / 2)),
   };
 
   moveWithAcceleration(player, acceleration, room.maxPlayerSpeed, elapsedTime);
