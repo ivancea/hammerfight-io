@@ -1,5 +1,7 @@
 # HammerFight.io
 
+[![Check deployment](https://github.com/ivancea/hammerfight-io/actions/workflows/check-deployment.yml/badge.svg)](https://hammerfight.io)
+
 HammerFight-like multiplayer browser game. Available at [hammerfight.io](https://hammerfight.io).
 
 This game is inspired by the [Hammerfight](https://store.steampowered.com/app/41100/Hammerfight/) game mechanics,
