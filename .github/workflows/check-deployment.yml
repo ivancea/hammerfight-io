@@ -29,3 +29,10 @@ jobs:
           token: ${{ secrets.TELEGRAM_TOKEN }}
           message: |
             Hammerfight.io is down
+
+      - name: Fail if there's an error
+        if: steps.fetch-page.outputs.error == 'false'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            core.setFailed('Hammerfight.io is down')
