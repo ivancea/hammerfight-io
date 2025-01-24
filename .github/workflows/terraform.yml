@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
   push:
     branches: ["master"]
-  # Regenerate every 2 months, to avoid certificate expiration
+  # Execute Terraform every month, to avoid certificate expiration
   schedule:
-    - cron: "0 0 1 */2 *"
+    - cron: "0 0 1 * *"
 
 permissions:
   contents: read

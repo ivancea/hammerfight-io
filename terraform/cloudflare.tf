@@ -12,10 +12,11 @@ resource "tls_cert_request" "tls_cert_request" {
 }
 
 resource "cloudflare_origin_ca_certificate" "tls_cert" {
-  csr                = tls_cert_request.tls_cert_request.cert_request_pem
-  hostnames          = [var.domain_name]
-  request_type       = "origin-rsa"
-  requested_validity = 90
+  csr                  = tls_cert_request.tls_cert_request.cert_request_pem
+  hostnames            = [var.domain_name]
+  request_type         = "origin-rsa"
+  requested_validity   = 90
+  min_days_for_renewal = 45
 }
 
 resource "cloudflare_record" "dns-record" {
