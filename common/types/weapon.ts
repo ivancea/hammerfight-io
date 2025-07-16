@@ -1,9 +1,9 @@
 import { Vector } from "../vector";
 
-export type Weapon = FlailWeapon | AuraWeapon;
+export type Weapon = FlailWeapon | AuraWeapon | SwordWeapon;
 
 export type WeaponType = Weapon["type"];
-export const WEAPON_TYPES = ["flail", "aura"] as const;
+export const WEAPON_TYPES = ["flail", "aura", "sword"] as const;
 
 type BaseWeapon = {
   // Using WEAPON_TYPES here as a double check that all weapon types are covered
@@ -59,6 +59,41 @@ export function makeAuraWeapon(): AuraWeapon {
     type: "aura",
     playerCollisionWeightMultiplier: 2,
     radiusFromPlayer: 5,
+    damageMultiplier: 1.5,
+  };
+}
+
+/**
+ * A sword weapon: A rigid line extending from the player.
+ */
+export type SwordWeapon = BaseWeapon & {
+  type: "sword";
+  weight: number;
+  width: number; // Width of the sword (used for collision)
+  length: number; // Length of the sword from hilt to tip
+  position: Vector; // Position of the sword base (at player)
+  tipPosition?: Vector; // Position of the sword tip (for collision detection)
+  rotation: number; // Rotation of the sword in radians
+  angularSpeed: number; // Speed of rotation in radians per second
+  maxSpeed: number;
+  damageMultiplier: number;
+};
+
+export function makeSwordWeapon(position: Vector): SwordWeapon {
+  const rotation = Math.PI / 2; // Start pointing upward
+  return {
+    type: "sword",
+    weight: 150,
+    width: 8, // Width of the sword blade (for collision)
+    length: 60, // Length of the sword
+    position,
+    tipPosition: {
+      x: position.x + Math.cos(rotation) * 60,
+      y: position.y + Math.sin(rotation) * 60,
+    },
+    rotation,
+    angularSpeed: 0, // Initial angular speed
+    maxSpeed: 1000,
     damageMultiplier: 1.5,
   };
 }

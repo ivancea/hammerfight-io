@@ -1,5 +1,5 @@
 import { makeBot } from "../../common/types/player";
-import { makeFlailWeapon } from "../../common/types/weapon";
+import { makeFlailWeapon, makeSwordWeapon } from "../../common/types/weapon";
 import { world } from "../world";
 import { BaseRoomController } from "./room-controller.base";
 
@@ -15,7 +15,11 @@ export class BotsRoom extends BaseRoomController {
         y: room.size.y / 2,
       };
 
-      room.players[botId] = makeBot(botId, room.id, botName, position, makeFlailWeapon(position));
+      // Randomly choose between flail and sword weapon for bots
+      const weaponType = Math.random() > 0.5 ? "flail" : "sword";
+      const weapon = weaponType === "flail" ? makeFlailWeapon(position) : makeSwordWeapon(position);
+
+      room.players[botId] = makeBot(botId, room.id, botName, position, weapon);
     }
 
     super(room);

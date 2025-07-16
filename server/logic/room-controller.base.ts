@@ -4,7 +4,12 @@ import { assert } from "../../common/errors";
 import { applyPhysics } from "../../common/physics";
 import { makePlayer, Player } from "../../common/types/player";
 import { Room } from "../../common/types/room";
-import { makeAuraWeapon, makeFlailWeapon, WeaponType } from "../../common/types/weapon";
+import {
+  makeAuraWeapon,
+  makeFlailWeapon,
+  makeSwordWeapon,
+  WeaponType,
+} from "../../common/types/weapon";
 import { divide } from "../../common/vector";
 import { server, Socket } from "../server";
 import { getLogger } from "../utils/logger";
@@ -47,6 +52,7 @@ export class BaseRoomController implements RoomController {
       match(weapon)
         .with("flail", () => makeFlailWeapon(playerPosition))
         .with("aura", () => makeAuraWeapon())
+        .with("sword", () => makeSwordWeapon(playerPosition))
         .exhaustive(),
     );
 

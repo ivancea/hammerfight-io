@@ -3,9 +3,11 @@ import { Damage } from "./damage";
 import {
   applyFriction,
   handleCircleCollisionWithLimits,
+  handleCircleRectangleCollision,
   handleCirclesCollision,
   moveWithAcceleration,
 } from "./physics.common";
+import { adaptAngularRectangleToPhysics } from "./physics.common.extensions";
 import { ELASTICITY } from "./physics.constants";
 import { Player } from "./types/player";
 import { Room } from "./types/room";
@@ -66,6 +68,12 @@ export function handleFlailWeaponCollisions(
       })
       .with({ type: "aura" }, () => {
         // No-op: Aura weapons only collide with players and other aura weapons
+      })
+      .with({ type: "sword" }, (otherWeapon) => {
+        // Flail (circle) colliding with sword (rectangle)
+        // Need to adapt the sword weapon to include velocity for collision calculations
+        const adaptedSwordWeapon = adaptAngularRectangleToPhysics(otherWeapon);
+        handleCircleRectangleCollision(weapon, adaptedSwordWeapon, elapsedTime);
       })
       .exhaustive();
   }

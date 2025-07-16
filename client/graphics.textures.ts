@@ -6,9 +6,11 @@ import ship2Image from "./assets/ships/ship2.png";
 import ship3Image from "./assets/ships/ship3.png";
 import ship4Image from "./assets/ships/ship4.png";
 import flailImage from "./assets/weapons/flail.png";
+import swordImage from "./assets/weapons/sword.png";
 
 export const SHIP_IMAGE_SIZE = 100;
 export const FLAIL_IMAGE_SIZE = 100;
+export const SWORD_IMAGE_SIZE = 100;
 
 let texturesTwo: Two | undefined;
 let textures:
@@ -16,6 +18,7 @@ let textures:
       ships: Texture[];
       weapons: {
         flail: Texture;
+        sword: Texture;
       };
     }
   | undefined;
@@ -28,6 +31,7 @@ export function loadTextures(two: Two) {
       ),
       weapons: {
         flail: two.makeTexture(flailImage),
+        sword: two.makeTexture(swordImage),
       },
     };
     texturesTwo = two;

@@ -7,6 +7,12 @@ import {
   handleFlailWeaponLimitsCollisions,
   moveFlailWeapon,
 } from "./physics.weapon.flail";
+import {
+  applyFrictionToSwordWeapon,
+  handleSwordWeaponCollisions,
+  handleSwordWeaponLimitsCollisions,
+  moveSwordWeapon,
+} from "./physics.weapon.sword";
 import { Player } from "./types/player";
 import { Room } from "./types/room";
 
@@ -17,6 +23,9 @@ export function moveWeapon(player: Player, room: Room, elapsedTime: number) {
     })
     .with({ type: "aura" }, () => {
       // No-op: Aura weapons don't move
+    })
+    .with({ type: "sword" }, (weapon) => {
+      moveSwordWeapon(weapon, player, room, elapsedTime);
     })
     .exhaustive();
 }
@@ -34,6 +43,9 @@ export function handleWeaponCollisions(
     .with({ type: "aura" }, (weapon) => {
       handleAuraWeaponCollisions(weapon, player, room, elapsedTime, onPlayerDamage);
     })
+    .with({ type: "sword" }, (weapon) => {
+      handleSwordWeaponCollisions(weapon, player, room, elapsedTime, onPlayerDamage);
+    })
     .exhaustive();
 }
 
@@ -45,6 +57,9 @@ export function handleWeaponLimitsCollisions(player: Player, room: Room, elapsed
     .with({ type: "aura" }, () => {
       // No-op: Aura weapons don't collide with limits
     })
+    .with({ type: "sword" }, (weapon) => {
+      handleSwordWeaponLimitsCollisions(weapon, player, room, elapsedTime);
+    })
     .exhaustive();
 }
 
@@ -55,6 +70,9 @@ export function applyFrictionToWeapon(player: Player, room: Room, elapsedTime: n
     })
     .with({ type: "aura" }, () => {
       // No-op: Aura weapons don't move, so they don't have friction
+    })
+    .with({ type: "sword" }, (weapon) => {
+      applyFrictionToSwordWeapon(weapon, player, room, elapsedTime);
     })
     .exhaustive();
 }
