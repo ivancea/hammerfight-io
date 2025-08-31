@@ -2,6 +2,12 @@ name: "Terraform"
 
 on:
   workflow_dispatch:
+    inputs:
+      replace_ssl_cert:
+        description: "Replace SSL certificate"
+        required: false
+        default: false
+        type: boolean
   push:
     branches: ["master"]
   # Execute Terraform every month, to avoid certificate expiration
@@ -48,4 +54,8 @@ jobs:
           TF_VAR_elastic_cloud_id: ${{ secrets.TF_VAR_ELASTIC_CLOUD_ID }}
           TF_VAR_elastic_api_key: ${{ secrets.TF_VAR_ELASTIC_API_KEY }}
         run: |
-          terraform apply -auto-approve -input=false -replace="cloudflare_origin_ca_certificate.tls_cert"
+          if [[ "${{ github.event_name }}" == "schedule" || "${{ github.event.inputs.replace_ssl_cert }}" == "true" ]]; then
+            terraform apply -auto-approve -input=false -replace="cloudflare_origin_ca_certificate.tls_cert"
+          else
+            terraform apply -auto-approve -input=false
+          fi
