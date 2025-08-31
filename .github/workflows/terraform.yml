@@ -48,8 +48,4 @@ jobs:
           TF_VAR_elastic_cloud_id: ${{ secrets.TF_VAR_ELASTIC_CLOUD_ID }}
           TF_VAR_elastic_api_key: ${{ secrets.TF_VAR_ELASTIC_API_KEY }}
         run: |
-          if [[ "${{ github.event_name }}" == "schedule" ]]; then
-            terraform apply -auto-approve -input=false -replace="cloudflare_origin_ca_certificate.tls_cert"
-          else
-            terraform apply -auto-approve -input=false
-          fi
+          terraform apply -auto-approve -input=false -replace="cloudflare_origin_ca_certificate.tls_cert"
