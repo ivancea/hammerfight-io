@@ -1,4 +1,8 @@
-@import "ui-state.form";
+@use "ui-state.form";
+
+* {
+  box-sizing: border-box;
+}
 
 body {
   width: 100vw;
@@ -6,6 +10,10 @@ body {
   margin: 0;
   display: flex;
   flex-direction: column;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
+  position: relative;
+  overflow: hidden;
 }
 
 #game {
@@ -16,9 +24,43 @@ body {
   justify-content: center;
   align-items: center;
   user-select: none;
+  position: relative;
+  z-index: 1;
+  padding: 24px;
 
   & > svg {
     width: 100%;
     height: 100%;
+  }
+}
+
+#game > div {
+  position: relative;
+  z-index: 1;
+}
+
+.footer {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 24px;
+  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  position: relative;
+  z-index: 1;
+
+  a {
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: white;
+      text-decoration: underline;
+    }
   }
 }

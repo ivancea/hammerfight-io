@@ -1,6 +1,8 @@
 <!doctype html>
 <html>
   <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- Webpack automatic injection of tags enabled -->
   </head>
   <body>
@@ -8,45 +10,63 @@
 
     <template id="form-template">
       <div id="room-selection-form">
-        <h1>Hammerfight.io</h1>
+        <div class="flail-decoration"></div>
+        <div class="form-header">
+          <h1>Hammerfight.io</h1>
+          <p class="subtitle">Enter the arena and be the last one standing</p>
+        </div>
         <div class="form-fields">
-          <span>
+          <div class="form-group">
             <label for="username">Username</label>
-            <input id="username" name="username" type="text" placeholder="Username" />
-          </span>
-          <span>
-            <label for="input-mode">Input mode</label>
-            <select id="input-mode" name="input-mode"></select>
-          </span>
-          <span>
-            <label for="weapon">Weapon</label>
-            <select id="weapon" name="weapon"></select>
-          </span>
-          <span>
-            <label for="bots">Bots</label>
-            <input id="bots" name="bots" type="checkbox" checked />
-          </span>
-          <span>
-            <label for="debug-mode">Debug</label>
-            <input id="debug-mode" name="debug-mode" type="checkbox" />
-          </span>
-          <span class="submit">
-            <button id="room-selection-form-submit" type="button">Join room</button>
-          </span>
+            <input
+              id="username"
+              name="username"
+              type="text"
+              placeholder="Enter your warrior name"
+              required
+              maxlength="20"
+            />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="input-mode">Control Mode</label>
+              <select id="input-mode" name="input-mode"></select>
+            </div>
+            <div class="form-group">
+              <label for="weapon">Weapon Type</label>
+              <select id="weapon" name="weapon"></select>
+            </div>
+          </div>
+          <div class="form-options">
+            <div class="checkbox-group">
+              <input id="bots" name="bots" type="checkbox" checked />
+              <label for="bots">
+                <span class="checkbox-label">Play with bots</span>
+                <span class="checkbox-description">Join a room with AI opponents</span>
+              </label>
+            </div>
+            <div class="checkbox-group">
+              <input id="debug-mode" name="debug-mode" type="checkbox" />
+              <label for="debug-mode">
+                <span class="checkbox-label">Debug mode</span>
+                <span class="checkbox-description">For development purposes only</span>
+              </label>
+            </div>
+          </div>
+          <button id="room-selection-form-submit" type="button" class="btn-primary">
+            <span>Join Room</span>
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M7 4L13 10L7 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
         </div>
       </div>
     </template>
 
     <div id="game"></div>
-    <div
-      style="font-size: small; display: flex; flex-direction: row; justify-content: space-between"
-    >
+    <div class="footer">
       <span>Version <%= htmlWebpackPlugin.options.appVersion %></span>
-      <span
-        ><a href="https://github.com/ivancea/hammerfight-io/" target="_blank"
-          >Open source project</a
-        ></span
-      >
+      <a href="https://github.com/ivancea/hammerfight-io/" target="_blank">Open source project</a>
     </div>
   </body>
 </html>
