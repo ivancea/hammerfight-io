@@ -28,7 +28,9 @@
   border-radius: 24px;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.5);
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.5);
   animation: slideIn 0.4s ease-out;
   position: relative;
   overflow: visible;
@@ -59,7 +61,6 @@
       background-repeat: no-repeat;
     }
   }
-
 
   @keyframes slideIn {
     from {
