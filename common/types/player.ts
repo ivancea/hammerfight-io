@@ -68,6 +68,13 @@ export type Player = {
    */
   weapon: Weapon;
 
+  /**
+   * How much of the player's control is currently reduced (0–1).
+   * 0 = full control, 1 = no control.
+   * Applied on hit proportional to damage, decays back to 0 over time.
+   */
+  controlReduction: number;
+
   [AI_CONTEXT_SYMBOL]?: AiContext;
 };
 
@@ -92,6 +99,7 @@ export function makePlayer(
     velocity: { x: 0, y: 0 },
     acceleration: { x: 0, y: 0 },
     weapon,
+    controlReduction: 0,
   };
 }
 
@@ -116,5 +124,6 @@ export function makeBot(
     velocity: { x: 0, y: 0 },
     acceleration: { x: 0, y: 0 },
     weapon,
+    controlReduction: 0,
   };
 }

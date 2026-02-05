@@ -70,7 +70,19 @@ const DMG_BODY_SCALE = DMG_WEAPON_SCALE / PLAYER_MASS_SCALE;
  * extra knockback impulse proportional to the Rapier contact force
  * so hits look and feel impactful.
  */
-const HIT_KNOCKBACK_MULT = 0.25;
+const HIT_KNOCKBACK_MULT = 0.1;
+
+/**
+ * How much `controlReduction` the damaged player gains per point of damage.
+ * With typical weapon hits of ~100–150 damage this gives 30–50% stagger.
+ */
+const STAGGER_PER_DAMAGE = 0.003;
+
+/**
+ * How fast `controlReduction` decays back to 0, in units per second.
+ * 1.0 means a 50% stagger recovers in 0.5 s.
+ */
+const STAGGER_RECOVERY_RATE = 1.0;
 
 // ─────────────────────────────────────────────────────────────────────
 // Collision groups  (membership << 16 | filter)
@@ -302,7 +314,17 @@ export function stepPhysics(pw: PhysicsWorld, room: Room, elapsedTime: number): 
   const { world } = pw;
   const damages: Damage[] = [];
 
-  // ── 1. Apply forces ─────────────────────────────────────────────
+  // ── 0. Decay hit-stagger each tick ─────────────────────────────
+  for (const player of Object.values(room.players)) {
+    if (player.controlReduction > 0) {
+      player.controlReduction = Math.max(
+        0,
+        player.controlReduction - STAGGER_RECOVERY_RATE * elapsedTime,
+      );
+    }
+  }
+
+  // ── 1. Apply forces (scaled by 1 − controlReduction) ──────────
   for (const player of Object.values(room.players)) {
     applyPlayerForces(pw, player);
   }
@@ -340,10 +362,18 @@ export function stepPhysics(pw: PhysicsWorld, room: Room, elapsedTime: number): 
     }
   }
 
-  // ── 5. Contact force events → damage ────────────────────────────
+  // ── 5. Contact force events → damage + stagger ─────────────────
   eq.drainContactForceEvents((ev) => {
     contactToDamage(pw, room, ev, damages);
   });
+
+  // Apply stagger from the damage dealt this tick
+  for (const dmg of damages) {
+    const p = room.players[dmg.damagedPlayerId];
+    if (p) {
+      p.controlReduction = Math.min(1, p.controlReduction + dmg.amount * STAGGER_PER_DAMAGE);
+    }
+  }
 
   // ── 6. Aura effects (manual) ────────────────────────────────────
   applyAuraEffects(pw, room, elapsedTime, damages);
@@ -361,12 +391,17 @@ function applyPlayerForces(pw: PhysicsWorld, player: Player) {
   if (!h) return;
   const body = pw.world.getRigidBody(h.bodyHandle);
 
+  // Scale input by how much control the player has after being hit
+  const control = 1 - player.controlReduction;
+
   // Log-scaled acceleration (original game feel)
   const ax =
     player.acceleration.x *
+    control *
     Math.log2(Math.max(2, Math.abs(player.acceleration.x - player.velocity.x) / 2));
   const ay =
     player.acceleration.y *
+    control *
     Math.log2(Math.max(2, Math.abs(player.acceleration.y - player.velocity.y) / 2));
 
   const m = body.mass();
