@@ -1,3 +1,4 @@
+import { initRapier } from "../common/physics.world";
 import { clampMagnitude } from "../common/vector";
 import { env } from "./env";
 import { disconnectPlayer, joinPlayer } from "./logic/logic";
@@ -8,6 +9,7 @@ import { getPlayer, getRoom } from "./world";
 
 async function startServer() {
   await initializeLogger();
+  await initRapier();
 
   server.initialize(env.PORT, env.BASE_PATH);
 

@@ -1,10 +1,22 @@
 import { match } from "ts-pattern";
 import { Damage } from "../../common/damage";
 import { assert } from "../../common/errors";
-import { applyPhysics } from "../../common/physics";
+import {
+  addPlayer as addPlayerToPhysics,
+  createPhysicsWorld,
+  destroyPhysicsWorld,
+  PhysicsWorld,
+  removePlayer as removePlayerFromPhysics,
+  stepPhysics,
+} from "../../common/physics.world";
 import { makePlayer, Player } from "../../common/types/player";
 import { Room } from "../../common/types/room";
-import { makeAuraWeapon, makeFlailWeapon, WeaponType } from "../../common/types/weapon";
+import {
+  makeAuraWeapon,
+  makeFlailWeapon,
+  makeSwordWeapon,
+  WeaponType,
+} from "../../common/types/weapon";
 import { divide } from "../../common/vector";
 import { server, Socket } from "../server";
 import { getLogger } from "../utils/logger";
@@ -21,6 +33,8 @@ export type RoomController = {
 };
 
 export class BaseRoomController implements RoomController {
+  pw: PhysicsWorld;
+
   static makeRoom(roomId: number): Room {
     return {
       id: roomId,
@@ -33,7 +47,14 @@ export class BaseRoomController implements RoomController {
     };
   }
 
-  constructor(public room: Room) {}
+  constructor(public room: Room) {
+    this.pw = createPhysicsWorld(room);
+
+    // Add any players already in the room (e.g. bots added before super())
+    for (const player of Object.values(room.players)) {
+      addPlayerToPhysics(this.pw, player);
+    }
+  }
 
   async joinPlayer(socket: Socket, username: string, weapon: WeaponType) {
     await server.addToRoom(socket, this.room);
@@ -47,12 +68,14 @@ export class BaseRoomController implements RoomController {
       match(weapon)
         .with("flail", () => makeFlailWeapon(playerPosition))
         .with("aura", () => makeAuraWeapon())
+        .with("sword", () => makeSwordWeapon())
         .exhaustive(),
     );
 
     socketsById[socket.id] = socket;
     playersById[socket.id] = player;
     this.room.players[socket.id] = player;
+    addPlayerToPhysics(this.pw, player);
 
     return player;
   }
@@ -60,6 +83,7 @@ export class BaseRoomController implements RoomController {
   disconnectPlayer(player: Player) {
     const room = getRoom(player);
 
+    removePlayerFromPhysics(this.pw, player.id);
     socketsById[player.id]?.disconnect();
 
     delete room.players[player.id];
@@ -94,7 +118,7 @@ export class BaseRoomController implements RoomController {
         },
       },
       () => {
-        applyPhysics(this.room, elapsedTime, (damage) => damages.push(damage));
+        damages.push(...stepPhysics(this.pw, this.room, elapsedTime));
       },
     );
 
@@ -137,5 +161,7 @@ export class BaseRoomController implements RoomController {
     server.broadcastRoom(this.room).emit("roomUpdated", { room: this.room });
   }
 
-  destroy() {}
+  destroy() {
+    destroyPhysicsWorld(this.pw);
+  }
 }

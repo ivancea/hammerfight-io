@@ -15,6 +15,7 @@ import { getContext, getCurrentPlayer, isDebugMode, isPlayerAlive } from "./cont
 import { getTextures, SHIP_IMAGE_SIZE } from "./graphics.textures";
 import { addAuraWeapon, removeAuraWeapon, updateAuraWeapon } from "./graphics.weapons.aura";
 import { addFlailWeapon, removeFlailWeapon, updateFlailWeapon } from "./graphics.weapons.flail";
+import { addSwordWeapon, removeSwordWeapon, updateSwordWeapon } from "./graphics.weapons.sword";
 
 let two: Two | undefined;
 let resizeObserver: ResizeObserver | undefined;
@@ -181,6 +182,10 @@ function internalUpdatePlayer(player: Player) {
       assert(two, "Game not initialized");
       updateAuraWeapon(two, weapon, player);
     })
+    .with({ type: "sword" }, (weapon) => {
+      assert(two, "Game not initialized");
+      updateSwordWeapon(two, weapon, player);
+    })
     .exhaustive();
 
   if (isDebugMode()) {
@@ -244,6 +249,10 @@ function internalAddPlayer(player: Player) {
       assert(two, "Game not initialized");
       addAuraWeapon(two, weapon, player);
     })
+    .with({ type: "sword" }, (weapon) => {
+      assert(two, "Game not initialized");
+      addSwordWeapon(two, weapon, player);
+    })
     .exhaustive();
 
   if (isDebugMode()) {
@@ -273,6 +282,10 @@ function internalRemovePlayer(player: Player) {
     .with({ type: "aura" }, (weapon) => {
       assert(two, "Game not initialized");
       removeAuraWeapon(two, weapon, player);
+    })
+    .with({ type: "sword" }, (weapon) => {
+      assert(two, "Game not initialized");
+      removeSwordWeapon(two, weapon, player);
     })
     .exhaustive();
 

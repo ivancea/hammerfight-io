@@ -20,6 +20,7 @@
     "check": "tsc --noEmit && npx webpack configtest && npm run lint && npm run circular-dependencies"
   },
   "dependencies": {
+    "@dimforge/rapier2d-compat": "^0.19.3",
     "@elastic/elasticsearch": "^8.14.0",
     "compression": "^1.7.4",
     "dotenv": "^16.4.5",

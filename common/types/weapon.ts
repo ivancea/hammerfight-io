@@ -1,9 +1,10 @@
 import { Vector } from "../vector";
+import type { Player } from "./player";
 
-export type Weapon = FlailWeapon | AuraWeapon;
+export type Weapon = FlailWeapon | AuraWeapon | SwordWeapon;
 
 export type WeaponType = Weapon["type"];
-export const WEAPON_TYPES = ["flail", "aura"] as const;
+export const WEAPON_TYPES = ["flail", "aura", "sword"] as const;
 
 type BaseWeapon = {
   // Using WEAPON_TYPES here as a double check that all weapon types are covered
@@ -60,5 +61,75 @@ export function makeAuraWeapon(): AuraWeapon {
     playerCollisionWeightMultiplier: 2,
     radiusFromPlayer: 5,
     damageMultiplier: 1.5,
+  };
+}
+
+/**
+ * A sword weapon: A rigid blade extending from the player that swings based on movement.
+ */
+export type SwordWeapon = BaseWeapon & {
+  type: "sword";
+  weight: number;
+  /**
+   * The length of the blade from the player center.
+   *
+   * In meters.
+   */
+  length: number;
+  /**
+   * The width of the blade.
+   *
+   * In meters.
+   */
+  width: number;
+  /**
+   * The current angle of the sword.
+   *
+   * In radians. 0 is right, PI/2 is down, PI is left, -PI/2 is up.
+   */
+  angle: number;
+  /**
+   * The angular velocity of the sword.
+   *
+   * In radians per second.
+   */
+  angularVelocity: number;
+  /**
+   * The maximum angular speed of the sword.
+   *
+   * In radians per second.
+   */
+  maxAngularSpeed: number;
+};
+
+export function makeSwordWeapon(): SwordWeapon {
+  return {
+    type: "sword",
+    weight: 80,
+    length: 70,
+    width: 8,
+    angle: Math.PI / 2,
+    angularVelocity: 0,
+    maxAngularSpeed: 12,
+  };
+}
+
+/**
+ * Compute the world-space position of the sword tip (pure math, no physics engine dependency).
+ */
+export function getSwordTipPosition(player: Player, weapon: SwordWeapon): Vector {
+  return {
+    x: player.position.x + Math.cos(weapon.angle) * weapon.length,
+    y: player.position.y + Math.sin(weapon.angle) * weapon.length,
+  };
+}
+
+/**
+ * Compute the world-space velocity of the sword tip (pure math, no physics engine dependency).
+ */
+export function getSwordTipVelocity(player: Player, weapon: SwordWeapon): Vector {
+  return {
+    x: player.velocity.x + -Math.sin(weapon.angle) * weapon.angularVelocity * weapon.length,
+    y: player.velocity.y + Math.cos(weapon.angle) * weapon.angularVelocity * weapon.length,
   };
 }
