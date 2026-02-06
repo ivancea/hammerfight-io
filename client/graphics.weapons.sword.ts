@@ -2,7 +2,8 @@ import Two from "two.js";
 import { Line } from "two.js/src/shapes/line";
 import { assert } from "../common/errors";
 import { Player } from "../common/types/player";
-import { getSwordTipPosition, getSwordTipVelocity, SwordWeapon } from "../common/types/weapon";
+import { SwordWeapon } from "../common/types/weapon";
+import { Vector } from "../common/vector";
 import { isDebugMode } from "./context";
 
 export function addSwordWeapon(two: Two, weapon: SwordWeapon, player: Player) {
@@ -51,6 +52,20 @@ export function removeSwordWeapon(two: Two, weapon: SwordWeapon, player: Player)
     assert(swordVelocity, "Sword velocity not found");
     two.remove(swordVelocity);
   }
+}
+
+function getSwordTipPosition(player: Player, weapon: SwordWeapon): Vector {
+  return {
+    x: player.position.x + Math.cos(weapon.angle) * weapon.length,
+    y: player.position.y + Math.sin(weapon.angle) * weapon.length,
+  };
+}
+
+function getSwordTipVelocity(player: Player, weapon: SwordWeapon): Vector {
+  return {
+    x: player.velocity.x + -Math.sin(weapon.angle) * weapon.angularVelocity * weapon.length,
+    y: player.velocity.y + Math.cos(weapon.angle) * weapon.angularVelocity * weapon.length,
+  };
 }
 
 function swordBladeId(player: Player) {

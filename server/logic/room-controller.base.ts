@@ -33,7 +33,7 @@ export type RoomController = {
 };
 
 export class BaseRoomController implements RoomController {
-  pw: PhysicsWorld;
+  physicsWorld: PhysicsWorld;
 
   static makeRoom(roomId: number): Room {
     return {
@@ -48,11 +48,11 @@ export class BaseRoomController implements RoomController {
   }
 
   constructor(public room: Room) {
-    this.pw = createPhysicsWorld(room);
+    this.physicsWorld = createPhysicsWorld(room);
 
     // Add any players already in the room (e.g. bots added before super())
     for (const player of Object.values(room.players)) {
-      addPlayerToPhysics(this.pw, player);
+      addPlayerToPhysics(this.physicsWorld, player);
     }
   }
 
@@ -75,7 +75,7 @@ export class BaseRoomController implements RoomController {
     socketsById[socket.id] = socket;
     playersById[socket.id] = player;
     this.room.players[socket.id] = player;
-    addPlayerToPhysics(this.pw, player);
+    addPlayerToPhysics(this.physicsWorld, player);
 
     return player;
   }
@@ -83,7 +83,7 @@ export class BaseRoomController implements RoomController {
   disconnectPlayer(player: Player) {
     const room = getRoom(player);
 
-    removePlayerFromPhysics(this.pw, player.id);
+    removePlayerFromPhysics(this.physicsWorld, player.id);
     socketsById[player.id]?.disconnect();
 
     delete room.players[player.id];
@@ -118,7 +118,7 @@ export class BaseRoomController implements RoomController {
         },
       },
       () => {
-        damages.push(...stepPhysics(this.pw, this.room, elapsedTime));
+        damages.push(...stepPhysics(this.physicsWorld, this.room, elapsedTime));
       },
     );
 
@@ -162,6 +162,6 @@ export class BaseRoomController implements RoomController {
   }
 
   destroy() {
-    destroyPhysicsWorld(this.pw);
+    destroyPhysicsWorld(this.physicsWorld);
   }
 }

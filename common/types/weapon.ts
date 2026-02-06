@@ -1,5 +1,4 @@
 import { Vector } from "../vector";
-import type { Player } from "./player";
 
 export type Weapon = FlailWeapon | AuraWeapon | SwordWeapon;
 
@@ -111,25 +110,5 @@ export function makeSwordWeapon(): SwordWeapon {
     angle: Math.PI / 2,
     angularVelocity: 0,
     maxAngularSpeed: 12,
-  };
-}
-
-/**
- * Compute the world-space position of the sword tip (pure math, no physics engine dependency).
- */
-export function getSwordTipPosition(player: Player, weapon: SwordWeapon): Vector {
-  return {
-    x: player.position.x + Math.cos(weapon.angle) * weapon.length,
-    y: player.position.y + Math.sin(weapon.angle) * weapon.length,
-  };
-}
-
-/**
- * Compute the world-space velocity of the sword tip (pure math, no physics engine dependency).
- */
-export function getSwordTipVelocity(player: Player, weapon: SwordWeapon): Vector {
-  return {
-    x: player.velocity.x + -Math.sin(weapon.angle) * weapon.angularVelocity * weapon.length,
-    y: player.velocity.y + Math.cos(weapon.angle) * weapon.angularVelocity * weapon.length,
   };
 }
