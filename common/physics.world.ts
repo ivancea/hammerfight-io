@@ -63,6 +63,12 @@ const HIT_KNOCKBACK_MULTIPLIER = 0.1;
 const STAGGER_PER_DAMAGE = 0.003;
 
 /**
+ * Player collision damage is scaled down by PLAYER_MASS_SCALE; scale stagger
+ * back up so body-to-body hits still reduce control.
+ */
+const PLAYER_COLLISION_STAGGER_MULTIPLIER = PLAYER_MASS_SCALE;
+
+/**
  * How fast `controlReduction` decays back to 0, in units per second.
  * 1.0 means a 50% stagger recovers in 0.5 s.
  */
@@ -420,12 +426,21 @@ export function stepPhysics(physicsWorld: PhysicsWorld, room: Room, elapsedTime:
   // Apply stagger from the damage dealt this tick
   for (const damage of damages) {
     const damagedPlayer = room.players[damage.damagedPlayerId];
-    if (damagedPlayer) {
-      damagedPlayer.controlReduction = Math.min(
-        1,
-        damagedPlayer.controlReduction + damage.amount * STAGGER_PER_DAMAGE,
-      );
+    if (!damagedPlayer) {
+      continue;
     }
+
+    if (damage.type === "playerCollision" && damagedPlayer.weapon.type === "aura") {
+      continue;
+    }
+
+    const staggerMultiplier =
+      damage.type === "playerCollision" ? PLAYER_COLLISION_STAGGER_MULTIPLIER : 1;
+
+    damagedPlayer.controlReduction = Math.min(
+      1,
+      damagedPlayer.controlReduction + damage.amount * STAGGER_PER_DAMAGE * staggerMultiplier,
+    );
   }
 
   // 6. Read final Rapier state into Room
