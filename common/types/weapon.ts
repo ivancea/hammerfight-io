@@ -105,10 +105,10 @@ export function makeSwordWeapon(): SwordWeapon {
   return {
     type: "sword",
     weight: 80,
-    length: 70,
+    length: 75,
     width: 8,
     angle: Math.PI / 2,
     angularVelocity: 0,
-    maxAngularSpeed: 12,
+    maxAngularSpeed: 10,
   };
 }

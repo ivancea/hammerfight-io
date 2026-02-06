@@ -12,7 +12,7 @@ export function addSwordWeapon(two: Two, weapon: SwordWeapon, player: Player) {
   const swordBlade = two.makeLine(player.position.x, player.position.y, tip.x, tip.y);
   swordBlade.id = swordBladeId(player);
   swordBlade.linewidth = weapon.width;
-  swordBlade.stroke = "#B0B0C0";
+  swordBlade.stroke = "#505058";
 
   if (isDebugMode()) {
     const tipVel = getSwordTipVelocity(player, weapon);
