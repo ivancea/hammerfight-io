@@ -27,14 +27,14 @@ const LINEAR_DAMPING = -Math.log(0.8);
  * Angular damping for the sword.
  * Old code: angularVelocity *= 0.6^dt → damping ≈ -ln(0.6) ≈ 0.511.
  */
-const SWORD_ANG_DAMPING = -Math.log(0.6);
+const SWORD_ANGULAR_DAMPING = -Math.log(0.6);
 
 /**
  * Inertial multiplier applied as a force on the sword body
  * opposing the player's input acceleration. Lower than the old 1.5
  * because the revolute joint already provides some natural inertia.
  */
-const SWORD_INERTIAL_MULT = 1.0;
+const SWORD_INERTIAL_MULTIPLIER = 1.0;
 
 /** Restitution coefficient. Old game was super-elastic (1.5); Rapier caps at 1.0. */
 const RESTITUTION = 1.0;
@@ -43,7 +43,7 @@ const RESTITUTION = 1.0;
 const ELASTICITY = 1.5;
 
 /** Half-thickness of boundary walls. */
-const WALL_HT = 50;
+const WALL_HALF_THICKNESS = 50;
 
 /**
  * Player bodies use a much higher mass in Rapier so that weapon joints
@@ -54,14 +54,14 @@ const WALL_HT = 50;
 const PLAYER_MASS_SCALE = 20;
 
 /** Converts Rapier contact-force magnitude into game damage (weapon→body). */
-const DMG_WEAPON_SCALE = 0.00005;
+const DAMAGE_WEAPON_SCALE = 0.00005;
 
 /**
  * Damage scale for body→body collisions.
  * Divided by PLAYER_MASS_SCALE because the inflated masses produce
  * proportionally larger contact forces for the same relative velocity.
  */
-const DMG_BODY_SCALE = DMG_WEAPON_SCALE / PLAYER_MASS_SCALE;
+const DAMAGE_BODY_SCALE = DAMAGE_WEAPON_SCALE / PLAYER_MASS_SCALE;
 
 /**
  * Extra impulse multiplier applied to the enemy body on weapon hits.
@@ -70,7 +70,7 @@ const DMG_BODY_SCALE = DMG_WEAPON_SCALE / PLAYER_MASS_SCALE;
  * extra knockback impulse proportional to the Rapier contact force
  * so hits look and feel impactful.
  */
-const HIT_KNOCKBACK_MULT = 0.1;
+const HIT_KNOCKBACK_MULTIPLIER = 0.1;
 
 /**
  * How much `controlReduction` the damaged player gains per point of damage.
@@ -88,17 +88,23 @@ const STAGGER_RECOVERY_RATE = 1.0;
 // Collision groups  (membership << 16 | filter)
 // ─────────────────────────────────────────────────────────────────────
 
-const WALL_M = 0x0001;
-const BODY_M = 0x0002;
-const WEAP_M = 0x0004;
+const WALL_MEMBERSHIP = 0x0001;
+const BODY_MEMBERSHIP = 0x0002;
+const WEAPON_MEMBERSHIP = 0x0004;
 
-function cg(membership: number, filter: number) {
+function collisionGroup(membership: number, filter: number) {
   return (membership << 16) | filter;
 }
 
-const WALL_CG = cg(WALL_M, BODY_M | WEAP_M);
-const BODY_CG = cg(BODY_M, WALL_M | BODY_M | WEAP_M);
-const WEAP_CG = cg(WEAP_M, WALL_M | BODY_M | WEAP_M);
+const WALL_COLLISION_GROUP = collisionGroup(WALL_MEMBERSHIP, BODY_MEMBERSHIP | WEAPON_MEMBERSHIP);
+const BODY_COLLISION_GROUP = collisionGroup(
+  BODY_MEMBERSHIP,
+  WALL_MEMBERSHIP | BODY_MEMBERSHIP | WEAPON_MEMBERSHIP,
+);
+const WEAPON_COLLISION_GROUP = collisionGroup(
+  WEAPON_MEMBERSHIP,
+  WALL_MEMBERSHIP | BODY_MEMBERSHIP | WEAPON_MEMBERSHIP,
+);
 
 // ─────────────────────────────────────────────────────────────────────
 // PhysicsWorld type
@@ -128,34 +134,60 @@ export function createPhysicsWorld(room: Room): PhysicsWorld {
   const world = new RAPIER.World({ x: room.gravity.x, y: room.gravity.y });
 
   // Four boundary walls
-  const w = room.size.x;
-  const h = room.size.y;
-  addWall(world, w / 2, -WALL_HT / 2, w / 2 + WALL_HT, WALL_HT / 2); // top
-  addWall(world, w / 2, h + WALL_HT / 2, w / 2 + WALL_HT, WALL_HT / 2); // bottom
-  addWall(world, -WALL_HT / 2, h / 2, WALL_HT / 2, h / 2 + WALL_HT); // left
-  addWall(world, w + WALL_HT / 2, h / 2, WALL_HT / 2, h / 2 + WALL_HT); // right
+  const width = room.size.x;
+  const height = room.size.y;
+  addWall(
+    world,
+    width / 2,
+    -WALL_HALF_THICKNESS / 2,
+    width / 2 + WALL_HALF_THICKNESS,
+    WALL_HALF_THICKNESS / 2,
+  ); // top
+  addWall(
+    world,
+    width / 2,
+    height + WALL_HALF_THICKNESS / 2,
+    width / 2 + WALL_HALF_THICKNESS,
+    WALL_HALF_THICKNESS / 2,
+  ); // bottom
+  addWall(
+    world,
+    -WALL_HALF_THICKNESS / 2,
+    height / 2,
+    WALL_HALF_THICKNESS / 2,
+    height / 2 + WALL_HALF_THICKNESS,
+  ); // left
+  addWall(
+    world,
+    width + WALL_HALF_THICKNESS / 2,
+    height / 2,
+    WALL_HALF_THICKNESS / 2,
+    height / 2 + WALL_HALF_THICKNESS,
+  ); // right
 
   return { world, handles: {}, meta: new Map() };
 }
 
-function addWall(world: RAPIER.World, x: number, y: number, hx: number, hy: number) {
+function addWall(world: RAPIER.World, x: number, y: number, halfWidth: number, halfHeight: number) {
   const body = world.createRigidBody(RAPIER.RigidBodyDesc.fixed().setTranslation(x, y));
   world.createCollider(
-    RAPIER.ColliderDesc.cuboid(hx, hy).setRestitution(RESTITUTION).setCollisionGroups(WALL_CG),
+    RAPIER.ColliderDesc.cuboid(halfWidth, halfHeight)
+      .setRestitution(RESTITUTION)
+      .setCollisionGroups(WALL_COLLISION_GROUP),
     body,
   );
 }
 
-export function destroyPhysicsWorld(pw: PhysicsWorld): void {
-  pw.world.free();
+export function destroyPhysicsWorld(physicsWorld: PhysicsWorld): void {
+  physicsWorld.world.free();
 }
 
 // ─────────────────────────────────────────────────────────────────────
 // Add / remove player
 // ─────────────────────────────────────────────────────────────────────
 
-export function addPlayer(pw: PhysicsWorld, player: Player): void {
-  const { world } = pw;
+export function addPlayer(physicsWorld: PhysicsWorld, player: Player): void {
+  const { world } = physicsWorld;
 
   // ── Player body (no gravity, linear damping) ──────────────────
   const body = world.createRigidBody(
@@ -167,151 +199,154 @@ export function addPlayer(pw: PhysicsWorld, player: Player): void {
       .setCcdEnabled(false),
   );
 
-  const col = world.createCollider(
+  const collider = world.createCollider(
     RAPIER.ColliderDesc.ball(player.radius)
       .setMass(player.weight * PLAYER_MASS_SCALE)
       .setRestitution(RESTITUTION)
-      .setCollisionGroups(BODY_CG)
+      .setCollisionGroups(BODY_COLLISION_GROUP)
       .setActiveEvents(RAPIER.ActiveEvents.CONTACT_FORCE_EVENTS)
       .setActiveHooks(RAPIER.ActiveHooks.FILTER_CONTACT_PAIRS),
     body,
   );
 
-  const h: PlayerHandles = {
+  const playerHandles: PlayerHandles = {
     bodyHandle: body.handle,
-    colliderHandle: col.handle,
+    colliderHandle: collider.handle,
   };
-  pw.meta.set(col.handle, { playerId: player.id, kind: "body" });
+  physicsWorld.meta.set(collider.handle, { playerId: player.id, kind: "body" });
 
   // ── Weapon ────────────────────────────────────────────────────
   match(player.weapon)
-    .with({ type: "flail" }, (wp) => {
-      initFlail(pw, body, player.id, wp, h);
+    .with({ type: "flail" }, (weapon) => {
+      initFlail(physicsWorld, body, player.id, weapon, playerHandles);
     })
-    .with({ type: "sword" }, (wp) => {
-      initSword(pw, body, player, wp, h);
+    .with({ type: "sword" }, (weapon) => {
+      initSword(physicsWorld, body, player, weapon, playerHandles);
     })
     .with({ type: "aura" }, () => {
       /* handled manually each tick */
     })
     .exhaustive();
 
-  pw.handles[player.id] = h;
+  physicsWorld.handles[player.id] = playerHandles;
 }
 
 function initFlail(
-  pw: PhysicsWorld,
+  physicsWorld: PhysicsWorld,
   playerBody: RAPIER.RigidBody,
   playerId: string,
-  wp: FlailWeapon,
-  h: PlayerHandles,
+  weapon: FlailWeapon,
+  playerHandles: PlayerHandles,
 ) {
-  const { world } = pw;
+  const { world } = physicsWorld;
 
-  const fb = world.createRigidBody(
+  const flailBody = world.createRigidBody(
     RAPIER.RigidBodyDesc.dynamic()
-      .setTranslation(wp.position.x, wp.position.y)
-      .setLinvel(wp.velocity.x, wp.velocity.y)
+      .setTranslation(weapon.position.x, weapon.position.y)
+      .setLinvel(weapon.velocity.x, weapon.velocity.y)
       .setLinearDamping(LINEAR_DAMPING)
       .setCcdEnabled(true),
   );
 
-  const fc = world.createCollider(
-    RAPIER.ColliderDesc.ball(wp.radius)
-      .setMass(wp.weight)
+  const flailCollider = world.createCollider(
+    RAPIER.ColliderDesc.ball(weapon.radius)
+      .setMass(weapon.weight)
       .setRestitution(RESTITUTION)
-      .setCollisionGroups(WEAP_CG)
+      .setCollisionGroups(WEAPON_COLLISION_GROUP)
       .setActiveEvents(RAPIER.ActiveEvents.CONTACT_FORCE_EVENTS)
       .setActiveHooks(RAPIER.ActiveHooks.FILTER_CONTACT_PAIRS),
-    fb,
+    flailBody,
   );
 
   // Rope joint: constrains max distance = chainLength
-  const jt = world.createImpulseJoint(
-    RAPIER.JointData.rope(wp.chainLength, { x: 0, y: 0 }, { x: 0, y: 0 }),
+  const joint = world.createImpulseJoint(
+    RAPIER.JointData.rope(weapon.chainLength, { x: 0, y: 0 }, { x: 0, y: 0 }),
     playerBody,
-    fb,
+    flailBody,
     true,
   );
-  jt.setContactsEnabled(false); // flail won't collide with own player
+  joint.setContactsEnabled(false); // flail won't collide with own player
 
-  h.weaponBodyHandle = fb.handle;
-  h.weaponColliderHandle = fc.handle;
-  h.jointHandle = jt.handle;
-  pw.meta.set(fc.handle, { playerId, kind: "weapon" });
+  playerHandles.weaponBodyHandle = flailBody.handle;
+  playerHandles.weaponColliderHandle = flailCollider.handle;
+  playerHandles.jointHandle = joint.handle;
+  physicsWorld.meta.set(flailCollider.handle, { playerId, kind: "weapon" });
 }
 
 function initSword(
-  pw: PhysicsWorld,
+  physicsWorld: PhysicsWorld,
   playerBody: RAPIER.RigidBody,
   player: Player,
-  wp: SwordWeapon,
-  h: PlayerHandles,
+  weapon: SwordWeapon,
+  playerHandles: PlayerHandles,
 ) {
-  const { world } = pw;
+  const { world } = physicsWorld;
 
   // Sword centre is at blade midpoint
-  const cx = player.position.x + Math.cos(wp.angle) * (wp.length / 2);
-  const cy = player.position.y + Math.sin(wp.angle) * (wp.length / 2);
+  const centerX = player.position.x + Math.cos(weapon.angle) * (weapon.length / 2);
+  const centerY = player.position.y + Math.sin(weapon.angle) * (weapon.length / 2);
 
-  const sb = world.createRigidBody(
+  const swordBody = world.createRigidBody(
     RAPIER.RigidBodyDesc.dynamic()
-      .setTranslation(cx, cy)
-      .setRotation(wp.angle)
-      .setAngvel(wp.angularVelocity)
+      .setTranslation(centerX, centerY)
+      .setRotation(weapon.angle)
+      .setAngvel(weapon.angularVelocity)
       .setGravityScale(1)
-      .setAngularDamping(SWORD_ANG_DAMPING)
+      .setAngularDamping(SWORD_ANGULAR_DAMPING)
       .setLinearDamping(0)
       .setCcdEnabled(true),
   );
 
-  const sc = world.createCollider(
-    RAPIER.ColliderDesc.cuboid(wp.length / 2, wp.width / 2)
-      .setMass(wp.weight)
+  const swordCollider = world.createCollider(
+    RAPIER.ColliderDesc.cuboid(weapon.length / 2, weapon.width / 2)
+      .setMass(weapon.weight)
       .setRestitution(RESTITUTION)
-      .setCollisionGroups(WEAP_CG)
+      .setCollisionGroups(WEAPON_COLLISION_GROUP)
       .setActiveEvents(RAPIER.ActiveEvents.CONTACT_FORCE_EVENTS),
-    sb,
+    swordBody,
   );
 
   // Revolute joint: pivot at player centre = base of sword
-  const jt = world.createImpulseJoint(
-    RAPIER.JointData.revolute({ x: 0, y: 0 }, { x: -wp.length / 2, y: 0 }),
+  const joint = world.createImpulseJoint(
+    RAPIER.JointData.revolute({ x: 0, y: 0 }, { x: -weapon.length / 2, y: 0 }),
     playerBody,
-    sb,
+    swordBody,
     true,
   );
-  jt.setContactsEnabled(false); // sword won't collide with own player
+  joint.setContactsEnabled(false); // sword won't collide with own player
 
-  h.weaponBodyHandle = sb.handle;
-  h.weaponColliderHandle = sc.handle;
-  h.jointHandle = jt.handle;
-  pw.meta.set(sc.handle, { playerId: player.id, kind: "weapon" });
+  playerHandles.weaponBodyHandle = swordBody.handle;
+  playerHandles.weaponColliderHandle = swordCollider.handle;
+  playerHandles.jointHandle = joint.handle;
+  physicsWorld.meta.set(swordCollider.handle, { playerId: player.id, kind: "weapon" });
 }
 
-export function removePlayer(pw: PhysicsWorld, playerId: string): void {
-  const h = pw.handles[playerId];
-  if (!h) return;
+export function removePlayer(physicsWorld: PhysicsWorld, playerId: string): void {
+  const playerHandles = physicsWorld.handles[playerId];
+  if (!playerHandles) return;
 
-  pw.meta.delete(h.colliderHandle);
-  if (h.weaponColliderHandle !== undefined) pw.meta.delete(h.weaponColliderHandle);
+  physicsWorld.meta.delete(playerHandles.colliderHandle);
+  if (playerHandles.weaponColliderHandle !== undefined)
+    physicsWorld.meta.delete(playerHandles.weaponColliderHandle);
 
   // Removing a rigid-body also removes its colliders and joints.
-  if (h.weaponBodyHandle !== undefined) {
-    pw.world.removeRigidBody(pw.world.getRigidBody(h.weaponBodyHandle));
+  if (playerHandles.weaponBodyHandle !== undefined) {
+    physicsWorld.world.removeRigidBody(
+      physicsWorld.world.getRigidBody(playerHandles.weaponBodyHandle),
+    );
   }
 
-  pw.world.removeRigidBody(pw.world.getRigidBody(h.bodyHandle));
+  physicsWorld.world.removeRigidBody(physicsWorld.world.getRigidBody(playerHandles.bodyHandle));
 
-  delete pw.handles[playerId];
+  delete physicsWorld.handles[playerId];
 }
 
 // ─────────────────────────────────────────────────────────────────────
 // Physics step
 // ─────────────────────────────────────────────────────────────────────
 
-export function stepPhysics(pw: PhysicsWorld, room: Room, elapsedTime: number): Damage[] {
-  const { world } = pw;
+export function stepPhysics(physicsWorld: PhysicsWorld, room: Room, elapsedTime: number): Damage[] {
+  const { world } = physicsWorld;
   const damages: Damage[] = [];
 
   // ── 0. Decay hit-stagger each tick ─────────────────────────────
@@ -326,59 +361,62 @@ export function stepPhysics(pw: PhysicsWorld, room: Room, elapsedTime: number): 
 
   // ── 1. Apply forces (scaled by 1 − controlReduction) ──────────
   for (const player of Object.values(room.players)) {
-    applyPlayerForces(pw, player);
+    applyPlayerForces(physicsWorld, player);
   }
 
   // ── 2. Rapier step ──────────────────────────────────────────────
-  const eq = new RAPIER.EventQueue(true);
+  const eventQueue = new RAPIER.EventQueue(true);
   world.timestep = elapsedTime;
 
   // Physics hooks: filter self-collisions (same player's body↔weapon)
   const hooks: RAPIER.PhysicsHooks = {
-    filterContactPair(c1, c2) {
-      const m1 = pw.meta.get(c1);
-      const m2 = pw.meta.get(c2);
-      if (m1 && m2 && m1.playerId === m2.playerId) return null;
+    filterContactPair(collider1, collider2) {
+      const meta1 = physicsWorld.meta.get(collider1);
+      const meta2 = physicsWorld.meta.get(collider2);
+      if (meta1 && meta2 && meta1.playerId === meta2.playerId) return null;
       return RAPIER.SolverFlags.COMPUTE_IMPULSE;
     },
-    filterIntersectionPair(c1, c2) {
-      const m1 = pw.meta.get(c1);
-      const m2 = pw.meta.get(c2);
-      if (m1 && m2 && m1.playerId === m2.playerId) return false;
+    filterIntersectionPair(collider1, collider2) {
+      const meta1 = physicsWorld.meta.get(collider1);
+      const meta2 = physicsWorld.meta.get(collider2);
+      if (meta1 && meta2 && meta1.playerId === meta2.playerId) return false;
       return true;
     },
   };
-  world.step(eq, hooks);
+  world.step(eventQueue, hooks);
 
   // ── 3. Read back into Room state ────────────────────────────────
   for (const player of Object.values(room.players)) {
-    readBackState(pw, player, room);
+    readBackState(physicsWorld, player, room);
   }
 
   // ── 4. Flail chain bounce (manual, preserves old super-elastic feel)
   for (const player of Object.values(room.players)) {
     if (player.weapon.type === "flail") {
-      applyFlailChainBounce(pw, player, player.weapon);
+      applyFlailChainBounce(physicsWorld, player, player.weapon);
     }
   }
 
   // ── 5. Contact force events → damage + stagger ─────────────────
-  eq.drainContactForceEvents((ev) => {
-    contactToDamage(pw, room, ev, damages);
+  eventQueue.drainContactForceEvents((event) => {
+    processContactDamage(physicsWorld, room, event, damages);
   });
 
   // Apply stagger from the damage dealt this tick
-  for (const dmg of damages) {
-    const p = room.players[dmg.damagedPlayerId];
-    if (p) {
-      p.controlReduction = Math.min(1, p.controlReduction + dmg.amount * STAGGER_PER_DAMAGE);
+  for (const damage of damages) {
+    const damagedPlayer = room.players[damage.damagedPlayerId];
+    if (damagedPlayer) {
+      damagedPlayer.controlReduction = Math.min(
+        1,
+        damagedPlayer.controlReduction + damage.amount * STAGGER_PER_DAMAGE,
+      );
     }
   }
 
   // ── 6. Aura effects (manual) ────────────────────────────────────
-  applyAuraEffects(pw, room, elapsedTime, damages);
+  applyAuraEffects(physicsWorld, room, elapsedTime, damages);
 
-  eq.free();
+  eventQueue.free();
   return damages;
 }
 
@@ -386,89 +424,91 @@ export function stepPhysics(pw: PhysicsWorld, room: Room, elapsedTime: number): 
 // Step helpers
 // ─────────────────────────────────────────────────────────────────────
 
-function applyPlayerForces(pw: PhysicsWorld, player: Player) {
-  const h = pw.handles[player.id];
-  if (!h) return;
-  const body = pw.world.getRigidBody(h.bodyHandle);
+function applyPlayerForces(physicsWorld: PhysicsWorld, player: Player) {
+  const playerHandles = physicsWorld.handles[player.id];
+  if (!playerHandles) return;
+  const body = physicsWorld.world.getRigidBody(playerHandles.bodyHandle);
 
   // Scale input by how much control the player has after being hit
   const control = 1 - player.controlReduction;
 
   // Log-scaled acceleration (original game feel)
-  const ax =
+  const accelerationX =
     player.acceleration.x *
     control *
     Math.log2(Math.max(2, Math.abs(player.acceleration.x - player.velocity.x) / 2));
-  const ay =
+  const accelerationY =
     player.acceleration.y *
     control *
     Math.log2(Math.max(2, Math.abs(player.acceleration.y - player.velocity.y) / 2));
 
-  const m = body.mass();
+  const mass = body.mass();
   body.resetForces(true);
-  body.addForce({ x: ax * m, y: ay * m }, true);
+  body.addForce({ x: accelerationX * mass, y: accelerationY * mass }, true);
 
   // Sword: inertial pseudo-force opposing the player's input acceleration.
   // This makes the sword trail behind when the player accelerates.
-  if (player.weapon.type === "sword" && h.weaponBodyHandle !== undefined) {
-    const sb = pw.world.getRigidBody(h.weaponBodyHandle);
-    const sm = sb.mass();
-    sb.resetForces(true);
-    sb.addForce(
+  if (player.weapon.type === "sword" && playerHandles.weaponBodyHandle !== undefined) {
+    const swordBody = physicsWorld.world.getRigidBody(playerHandles.weaponBodyHandle);
+    const swordMass = swordBody.mass();
+    swordBody.resetForces(true);
+    swordBody.addForce(
       {
-        x: -player.acceleration.x * sm * SWORD_INERTIAL_MULT,
-        y: -player.acceleration.y * sm * SWORD_INERTIAL_MULT,
+        x: -player.acceleration.x * swordMass * SWORD_INERTIAL_MULTIPLIER,
+        y: -player.acceleration.y * swordMass * SWORD_INERTIAL_MULTIPLIER,
       },
       true,
     );
   }
 }
 
-function readBackState(pw: PhysicsWorld, player: Player, room: Room) {
-  const h = pw.handles[player.id];
-  if (!h) return;
-  const body = pw.world.getRigidBody(h.bodyHandle);
+function readBackState(physicsWorld: PhysicsWorld, player: Player, room: Room) {
+  const playerHandles = physicsWorld.handles[player.id];
+  if (!playerHandles) return;
+  const body = physicsWorld.world.getRigidBody(playerHandles.bodyHandle);
 
-  const p = body.translation();
-  const v = body.linvel();
-  player.position = { x: p.x, y: p.y };
-  player.velocity = { x: v.x, y: v.y };
+  const position = body.translation();
+  const velocity = body.linvel();
+  player.position = { x: position.x, y: position.y };
+  player.velocity = { x: velocity.x, y: velocity.y };
 
   // Clamp player speed
-  const spd = Math.sqrt(v.x * v.x + v.y * v.y);
-  if (spd > room.maxPlayerSpeed) {
-    const s = room.maxPlayerSpeed / spd;
-    player.velocity = { x: v.x * s, y: v.y * s };
+  const speed = Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
+  if (speed > room.maxPlayerSpeed) {
+    const scale = room.maxPlayerSpeed / speed;
+    player.velocity = { x: velocity.x * scale, y: velocity.y * scale };
     body.setLinvel(player.velocity, true);
   }
 
   match(player.weapon)
-    .with({ type: "flail" }, (wp) => {
-      if (h.weaponBodyHandle === undefined) return;
-      const wb = pw.world.getRigidBody(h.weaponBodyHandle);
-      const wp2 = wb.translation();
-      const wv = wb.linvel();
-      wp.position = { x: wp2.x, y: wp2.y };
-      wp.velocity = { x: wv.x, y: wv.y };
+    .with({ type: "flail" }, (weapon) => {
+      if (playerHandles.weaponBodyHandle === undefined) return;
+      const weaponBody = physicsWorld.world.getRigidBody(playerHandles.weaponBodyHandle);
+      const weaponPosition = weaponBody.translation();
+      const weaponVelocity = weaponBody.linvel();
+      weapon.position = { x: weaponPosition.x, y: weaponPosition.y };
+      weapon.velocity = { x: weaponVelocity.x, y: weaponVelocity.y };
 
       // Clamp flail speed
-      const ws = Math.sqrt(wv.x * wv.x + wv.y * wv.y);
-      if (ws > wp.maxSpeed) {
-        const r = wp.maxSpeed / ws;
-        wp.velocity = { x: wv.x * r, y: wv.y * r };
-        wb.setLinvel(wp.velocity, true);
+      const weaponSpeed = Math.sqrt(
+        weaponVelocity.x * weaponVelocity.x + weaponVelocity.y * weaponVelocity.y,
+      );
+      if (weaponSpeed > weapon.maxSpeed) {
+        const ratio = weapon.maxSpeed / weaponSpeed;
+        weapon.velocity = { x: weaponVelocity.x * ratio, y: weaponVelocity.y * ratio };
+        weaponBody.setLinvel(weapon.velocity, true);
       }
     })
-    .with({ type: "sword" }, (wp) => {
-      if (h.weaponBodyHandle === undefined) return;
-      const wb = pw.world.getRigidBody(h.weaponBodyHandle);
-      wp.angle = wb.rotation();
-      wp.angularVelocity = wb.angvel();
+    .with({ type: "sword" }, (weapon) => {
+      if (playerHandles.weaponBodyHandle === undefined) return;
+      const weaponBody = physicsWorld.world.getRigidBody(playerHandles.weaponBodyHandle);
+      weapon.angle = weaponBody.rotation();
+      weapon.angularVelocity = weaponBody.angvel();
 
       // Clamp angular speed
-      if (Math.abs(wp.angularVelocity) > wp.maxAngularSpeed) {
-        wp.angularVelocity = Math.sign(wp.angularVelocity) * wp.maxAngularSpeed;
-        wb.setAngvel(wp.angularVelocity, true);
+      if (Math.abs(weapon.angularVelocity) > weapon.maxAngularSpeed) {
+        weapon.angularVelocity = Math.sign(weapon.angularVelocity) * weapon.maxAngularSpeed;
+        weaponBody.setAngvel(weapon.angularVelocity, true);
       }
     })
     .with({ type: "aura" }, () => {})
@@ -480,86 +520,86 @@ function readBackState(pw: PhysicsWorld, player: Player, room: Room) {
  * super-elastic bounce when the chain went taut.  After Rapier steps,
  * check if the chain is at max length and apply the extra velocity.
  */
-function applyFlailChainBounce(pw: PhysicsWorld, player: Player, weapon: FlailWeapon) {
-  const dx = player.position.x - weapon.position.x;
-  const dy = player.position.y - weapon.position.y;
-  const dist = Math.sqrt(dx * dx + dy * dy);
+function applyFlailChainBounce(physicsWorld: PhysicsWorld, player: Player, weapon: FlailWeapon) {
+  const deltaX = player.position.x - weapon.position.x;
+  const deltaY = player.position.y - weapon.position.y;
+  const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
   // Only apply bounce when the chain is taut (distance at or beyond chain length)
-  if (dist < weapon.chainLength * 0.98) return;
+  if (distance < weapon.chainLength * 0.98) return;
 
-  const nx = dist > 0 ? dx / dist : 0;
-  const ny = dist > 0 ? dy / dist : 0;
+  const normalX = distance > 0 ? deltaX / distance : 0;
+  const normalY = distance > 0 ? deltaY / distance : 0;
 
   // Relative velocity along the chain (positive = moving apart)
-  const relVx = player.velocity.x - weapon.velocity.x;
-  const relVy = player.velocity.y - weapon.velocity.y;
-  const relVAlongChain = relVx * nx + relVy * ny;
+  const relativeVelocityX = player.velocity.x - weapon.velocity.x;
+  const relativeVelocityY = player.velocity.y - weapon.velocity.y;
+  const relativeVelocityAlongChain = relativeVelocityX * normalX + relativeVelocityY * normalY;
 
   // Only bounce if the flail is pulling away from the player
-  if (relVAlongChain >= 0) return;
+  if (relativeVelocityAlongChain >= 0) return;
 
   // Add bounce velocity towards the player (old ELASTICITY scaling)
-  const bounce = Math.abs(relVAlongChain) * (ELASTICITY - 1.0);
-  weapon.velocity.x += nx * bounce;
-  weapon.velocity.y += ny * bounce;
+  const bounce = Math.abs(relativeVelocityAlongChain) * (ELASTICITY - 1.0);
+  weapon.velocity.x += normalX * bounce;
+  weapon.velocity.y += normalY * bounce;
 
   // Sync back to Rapier
-  const h = pw.handles[player.id];
-  if (!h || h.weaponBodyHandle === undefined) return;
-  pw.world
-    .getRigidBody(h.weaponBodyHandle)
+  const playerHandles = physicsWorld.handles[player.id];
+  if (!playerHandles || playerHandles.weaponBodyHandle === undefined) return;
+  physicsWorld.world
+    .getRigidBody(playerHandles.weaponBodyHandle)
     .setLinvel({ x: weapon.velocity.x, y: weapon.velocity.y }, true);
 }
 
-function contactToDamage(
-  pw: PhysicsWorld,
+function processContactDamage(
+  physicsWorld: PhysicsWorld,
   room: Room,
-  ev: RAPIER.TempContactForceEvent,
-  out: Damage[],
+  event: RAPIER.TempContactForceEvent,
+  damages: Damage[],
 ) {
-  const m1 = pw.meta.get(ev.collider1());
-  const m2 = pw.meta.get(ev.collider2());
-  if (!m1 || !m2) return; // wall involved
-  if (m1.playerId === m2.playerId) return; // self (shouldn't happen)
+  const meta1 = physicsWorld.meta.get(event.collider1());
+  const meta2 = physicsWorld.meta.get(event.collider2());
+  if (!meta1 || !meta2) return; // wall involved
+  if (meta1.playerId === meta2.playerId) return; // self (shouldn't happen)
 
-  const f = ev.totalForceMagnitude();
+  const forceMagnitude = event.totalForceMagnitude();
 
   // weapon → enemy body
-  if (m1.kind === "weapon" && m2.kind === "body") {
-    out.push({
+  if (meta1.kind === "weapon" && meta2.kind === "body") {
+    damages.push({
       type: "weaponCollision",
-      playerId: m1.playerId,
-      damagedPlayerId: m2.playerId,
-      amount: f * DMG_WEAPON_SCALE,
+      playerId: meta1.playerId,
+      damagedPlayerId: meta2.playerId,
+      amount: forceMagnitude * DAMAGE_WEAPON_SCALE,
     });
-    applyHitKnockback(pw, room, m1.playerId, m2.playerId, f);
-  } else if (m2.kind === "weapon" && m1.kind === "body") {
-    out.push({
+    applyHitKnockback(physicsWorld, room, meta1.playerId, meta2.playerId, forceMagnitude);
+  } else if (meta2.kind === "weapon" && meta1.kind === "body") {
+    damages.push({
       type: "weaponCollision",
-      playerId: m2.playerId,
-      damagedPlayerId: m1.playerId,
-      amount: f * DMG_WEAPON_SCALE,
+      playerId: meta2.playerId,
+      damagedPlayerId: meta1.playerId,
+      amount: forceMagnitude * DAMAGE_WEAPON_SCALE,
     });
-    applyHitKnockback(pw, room, m2.playerId, m1.playerId, f);
+    applyHitKnockback(physicsWorld, room, meta2.playerId, meta1.playerId, forceMagnitude);
   }
-  // body → body (use DMG_BODY_SCALE to compensate for inflated player mass)
-  else if (m1.kind === "body" && m2.kind === "body") {
-    const p1 = room.players[m1.playerId];
-    const p2 = room.players[m2.playerId];
-    if (!p1 || !p2) return;
-    const tw = p1.weight + p2.weight;
-    out.push({
+  // body → body (use DAMAGE_BODY_SCALE to compensate for inflated player mass)
+  else if (meta1.kind === "body" && meta2.kind === "body") {
+    const player1 = room.players[meta1.playerId];
+    const player2 = room.players[meta2.playerId];
+    if (!player1 || !player2) return;
+    const totalWeight = player1.weight + player2.weight;
+    damages.push({
       type: "playerCollision",
-      playerId: p2.id,
-      damagedPlayerId: p1.id,
-      amount: (f * DMG_BODY_SCALE * p2.weight) / tw,
+      playerId: player2.id,
+      damagedPlayerId: player1.id,
+      amount: (forceMagnitude * DAMAGE_BODY_SCALE * player2.weight) / totalWeight,
     });
-    out.push({
+    damages.push({
       type: "playerCollision",
-      playerId: p1.id,
-      damagedPlayerId: p2.id,
-      amount: (f * DMG_BODY_SCALE * p1.weight) / tw,
+      playerId: player1.id,
+      damagedPlayerId: player2.id,
+      amount: (forceMagnitude * DAMAGE_BODY_SCALE * player1.weight) / totalWeight,
     });
   }
   // weapon ↔ weapon: physics only, no damage
@@ -568,48 +608,48 @@ function contactToDamage(
 /**
  * Applies an extra knockback impulse to the enemy body when hit by a weapon.
  * Direction: from the weapon towards the enemy.
- * Magnitude: proportional to the Rapier contact force × HIT_KNOCKBACK_MULT.
+ * Magnitude: proportional to the Rapier contact force × HIT_KNOCKBACK_MULTIPLIER.
  *
  * Also updates the Room player velocity so the knockback is visible
  * in the same tick's network broadcast.
  */
 function applyHitKnockback(
-  pw: PhysicsWorld,
+  physicsWorld: PhysicsWorld,
   room: Room,
   attackerId: string,
   enemyId: string,
   forceMagnitude: number,
 ) {
-  const aH = pw.handles[attackerId];
-  const eH = pw.handles[enemyId];
-  if (!aH || !eH) return;
+  const attackerHandles = physicsWorld.handles[attackerId];
+  const enemyHandles = physicsWorld.handles[enemyId];
+  if (!attackerHandles || !enemyHandles) return;
 
   // Use the weapon body position if available, fall back to player body
-  const sourceHandle = aH.weaponBodyHandle ?? aH.bodyHandle;
-  const sourceBody = pw.world.getRigidBody(sourceHandle);
-  const enemyBody = pw.world.getRigidBody(eH.bodyHandle);
+  const sourceHandle = attackerHandles.weaponBodyHandle ?? attackerHandles.bodyHandle;
+  const sourceBody = physicsWorld.world.getRigidBody(sourceHandle);
+  const enemyBody = physicsWorld.world.getRigidBody(enemyHandles.bodyHandle);
 
-  const sp = sourceBody.translation();
-  const ep = enemyBody.translation();
+  const sourcePosition = sourceBody.translation();
+  const enemyPosition = enemyBody.translation();
 
-  const dx = ep.x - sp.x;
-  const dy = ep.y - sp.y;
-  const dist = Math.sqrt(dx * dx + dy * dy);
-  if (dist === 0) return;
+  const deltaX = enemyPosition.x - sourcePosition.x;
+  const deltaY = enemyPosition.y - sourcePosition.y;
+  const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+  if (distance === 0) return;
 
-  const nx = dx / dist;
-  const ny = dy / dist;
-  const impulse = forceMagnitude * HIT_KNOCKBACK_MULT;
+  const normalX = deltaX / distance;
+  const normalY = deltaY / distance;
+  const impulse = forceMagnitude * HIT_KNOCKBACK_MULTIPLIER;
 
   // Apply to Rapier body (takes effect next step)
-  enemyBody.applyImpulse({ x: nx * impulse, y: ny * impulse }, true);
+  enemyBody.applyImpulse({ x: normalX * impulse, y: normalY * impulse }, true);
 
   // Also update Room state so the knockback is broadcast this tick
   const enemy = room.players[enemyId];
   if (enemy) {
-    const mass = enemyBody.mass();
-    enemy.velocity.x += (nx * impulse) / mass;
-    enemy.velocity.y += (ny * impulse) / mass;
+    const enemyMass = enemyBody.mass();
+    enemy.velocity.x += (normalX * impulse) / enemyMass;
+    enemy.velocity.y += (normalY * impulse) / enemyMass;
   }
 }
 
@@ -621,7 +661,12 @@ function applyHitKnockback(
  * Replicates the old aura weapon behaviour: enlarged circle collision
  * check that pushes entities apart and deals damage.
  */
-function applyAuraEffects(pw: PhysicsWorld, room: Room, elapsedTime: number, damages: Damage[]) {
+function applyAuraEffects(
+  physicsWorld: PhysicsWorld,
+  room: Room,
+  elapsedTime: number,
+  damages: Damage[],
+) {
   for (const player of Object.values(room.players)) {
     if (player.weapon.type !== "aura") continue;
     const weapon = player.weapon;
@@ -629,74 +674,80 @@ function applyAuraEffects(pw: PhysicsWorld, room: Room, elapsedTime: number, dam
     for (const other of Object.values(room.players)) {
       if (player.id === other.id) continue;
 
-      const dx = other.position.x - player.position.x;
-      const dy = other.position.y - player.position.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      const minDist = player.radius + weapon.radiusFromPlayer + other.radius;
+      const deltaX = other.position.x - player.position.x;
+      const deltaY = other.position.y - player.position.y;
+      const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+      const minDistance = player.radius + weapon.radiusFromPlayer + other.radius;
 
-      if (dist >= minDist) continue;
+      if (distance >= minDistance) continue;
 
-      const overlap = minDist - dist;
-      const nx = dist > 0 ? dx / dist : 1;
-      const ny = dist > 0 ? dy / dist : 0;
+      const overlap = minDistance - distance;
+      const normalX = distance > 0 ? deltaX / distance : 1;
+      const normalY = distance > 0 ? deltaY / distance : 0;
 
       const push = overlap * 2; // old code pushes both sides by 2× overlap
-      const ew = player.weight * weapon.playerCollisionWeightMultiplier;
-      const tw = ew + other.weight;
+      const effectiveWeight = player.weight * weapon.playerCollisionWeightMultiplier;
+      const totalWeight = effectiveWeight + other.weight;
 
       // Push apart (replicating handleRawCirclesCollision)
-      other.position.x += nx * push;
-      other.position.y += ny * push;
-      other.velocity.x += (nx * push * ELASTICITY * (ew / tw)) / elapsedTime;
-      other.velocity.y += (ny * push * ELASTICITY * (ew / tw)) / elapsedTime;
+      other.position.x += normalX * push;
+      other.position.y += normalY * push;
+      other.velocity.x +=
+        (normalX * push * ELASTICITY * (effectiveWeight / totalWeight)) / elapsedTime;
+      other.velocity.y +=
+        (normalY * push * ELASTICITY * (effectiveWeight / totalWeight)) / elapsedTime;
 
-      player.position.x -= nx * push;
-      player.position.y -= ny * push;
-      player.velocity.x -= (nx * push * ELASTICITY * (other.weight / tw)) / elapsedTime;
-      player.velocity.y -= (ny * push * ELASTICITY * (other.weight / tw)) / elapsedTime;
+      player.position.x -= normalX * push;
+      player.position.y -= normalY * push;
+      player.velocity.x -=
+        (normalX * push * ELASTICITY * (other.weight / totalWeight)) / elapsedTime;
+      player.velocity.y -=
+        (normalY * push * ELASTICITY * (other.weight / totalWeight)) / elapsedTime;
 
       // Sync modified positions back to Rapier
-      syncBodyToRapier(pw, player);
-      syncBodyToRapier(pw, other);
+      syncBodyToRapier(physicsWorld, player);
+      syncBodyToRapier(physicsWorld, other);
 
-      const dmg = (overlap * (ew / tw) * weapon.damageMultiplier) / elapsedTime;
-      if (dmg > 0) {
+      const damage =
+        (overlap * (effectiveWeight / totalWeight) * weapon.damageMultiplier) / elapsedTime;
+      if (damage > 0) {
         damages.push({
           type: "weaponCollision",
           damagedPlayerId: other.id,
           playerId: player.id,
-          amount: dmg,
+          amount: damage,
         });
       }
 
       // Aura vs aura
       if (other.weapon.type === "aura") {
-        const ow = other.weapon;
-        const auraDist =
-          player.radius + weapon.radiusFromPlayer + other.radius + ow.radiusFromPlayer;
+        const otherWeapon = other.weapon;
+        const auraDistance =
+          player.radius + weapon.radiusFromPlayer + other.radius + otherWeapon.radiusFromPlayer;
 
-        if (dist < auraDist) {
-          const aOverlap = auraDist - dist;
-          const oew = other.weight * ow.playerCollisionWeightMultiplier;
-          const atw = ew + oew;
+        if (distance < auraDistance) {
+          const auraOverlap = auraDistance - distance;
+          const otherEffectiveWeight = other.weight * otherWeapon.playerCollisionWeightMultiplier;
+          const auraTotalWeight = effectiveWeight + otherEffectiveWeight;
 
-          const pd = (aOverlap * (oew / atw)) / elapsedTime;
-          const od = (aOverlap * (ew / atw)) / elapsedTime;
+          const playerDamage =
+            (auraOverlap * (otherEffectiveWeight / auraTotalWeight)) / elapsedTime;
+          const otherDamage = (auraOverlap * (effectiveWeight / auraTotalWeight)) / elapsedTime;
 
-          if (pd > 0) {
+          if (playerDamage > 0) {
             damages.push({
               type: "weaponCollision",
               damagedPlayerId: player.id,
               playerId: other.id,
-              amount: pd,
+              amount: playerDamage,
             });
           }
-          if (od > 0) {
+          if (otherDamage > 0) {
             damages.push({
               type: "weaponCollision",
               damagedPlayerId: other.id,
               playerId: player.id,
-              amount: od,
+              amount: otherDamage,
             });
           }
         }
@@ -705,10 +756,10 @@ function applyAuraEffects(pw: PhysicsWorld, room: Room, elapsedTime: number, dam
   }
 }
 
-function syncBodyToRapier(pw: PhysicsWorld, player: Player) {
-  const h = pw.handles[player.id];
-  if (!h) return;
-  const b = pw.world.getRigidBody(h.bodyHandle);
-  b.setTranslation({ x: player.position.x, y: player.position.y }, true);
-  b.setLinvel({ x: player.velocity.x, y: player.velocity.y }, true);
+function syncBodyToRapier(physicsWorld: PhysicsWorld, player: Player) {
+  const playerHandles = physicsWorld.handles[player.id];
+  if (!playerHandles) return;
+  const body = physicsWorld.world.getRigidBody(playerHandles.bodyHandle);
+  body.setTranslation({ x: player.position.x, y: player.position.y }, true);
+  body.setLinvel({ x: player.velocity.x, y: player.velocity.y }, true);
 }
