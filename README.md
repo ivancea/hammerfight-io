@@ -71,8 +71,7 @@ Note that servers will have a short downtime, as they are destroyed and recreate
 
 > 💡 Some parts of this section may have not been implemented yet
 
-Logic and physics run both in the client and in the server, as to avoid having things stuck in the client if there's latency spikes.
-
+Logic and physics run both in the client and in the server, as to avoid having things stuck in the client if there's latency spikes. They use using Rapier2D for physics.
 Every time the server updates something, it's broadcasted to the clients in that room. Clients receive it, and override their local state.
 This way, the client both predict the game, while they keep moving.
 
@@ -83,4 +82,4 @@ Latency is the major problem in a real-time game like this one, and future impro
 - Reducing the number of players per room, if that is a problem
 - Migrating to a faster language. Potentially one with a SocketIO protocol implementation, like Rust. This would mean losing the shared code between client and server however, which could affect client predictability, as well as being more error-prone
 - If the amount of data sent in the events affects the times, reduce it to the bare minimum, like just the changed bits of a player or room instead of everything
-- If the physics logic is too slow, optimize it. Depending on the problematic part, for example, it could mean adding chunks to the game to optimize collisions (Or some kind of 2D tree)
+- If the physics logic is too slow, optimize it (Rapier2D handles broad-phase internally, but game-level logic around it could be improved). If Rapier2D is too slow, tweak its config or migrate it.
