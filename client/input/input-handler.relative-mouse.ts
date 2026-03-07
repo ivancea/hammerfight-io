@@ -29,10 +29,12 @@ export class RelativeMouseInputHandler implements InputHandler {
   ) {
     element.addEventListener("mousemove", this.onMouseMove);
     element.addEventListener("click", () => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       element.requestPointerLock()?.catch((e: unknown) => {
         console.error("Pointer lock failed", e);
       });
     });
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     element.requestPointerLock()?.catch((e: unknown) => {
       console.error("Pointer lock failed", e);
     });
