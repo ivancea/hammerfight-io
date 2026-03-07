@@ -33,10 +33,10 @@ const SWORD_ANGULAR_DAMPING = -Math.log(0.6);
 const SWORD_INERTIAL_MULTIPLIER = 1.0;
 
 /** Restitution coefficient. Rapier caps at 1.0 (perfectly elastic). */
-const RESTITUTION = 1.0;
+const RESTITUTION = 0.5;
 
 /** Super-elastic coefficient used for flail chain bounce. */
-const ELASTICITY = 1.5;
+const ELASTICITY = 1.0;
 
 /** Half-thickness of boundary walls. */
 const WALL_HALF_THICKNESS = 50;

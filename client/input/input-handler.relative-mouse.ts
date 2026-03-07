@@ -29,11 +29,11 @@ export class RelativeMouseInputHandler implements InputHandler {
   ) {
     element.addEventListener("mousemove", this.onMouseMove);
     element.addEventListener("click", () => {
-      element.requestPointerLock().catch((e: unknown) => {
+      element.requestPointerLock()?.catch((e: unknown) => {
         console.error("Pointer lock failed", e);
       });
     });
-    element.requestPointerLock().catch((e: unknown) => {
+    element.requestPointerLock()?.catch((e: unknown) => {
       console.error("Pointer lock failed", e);
     });
 
