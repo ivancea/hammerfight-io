@@ -2,7 +2,8 @@
 import { env } from "../env";
 import { InternalLogger, Logger } from "./logger.base";
 import { ConsoleLogger } from "./logger.console";
-import { ElasticSearchLogger } from "./logger.elastic-search";
+import { ElasticSearchCloudLogger } from "./logger.elastic-search.cloud";
+import { ElasticSearchServerlessLogger } from "./logger.elastic-search.serverless";
 import { MultiLogger } from "./logger.multi";
 
 let logger: InternalLogger = new ConsoleLogger();
@@ -17,12 +18,28 @@ export async function initializeLogger() {
   const loggers = [new ConsoleLogger()];
 
   if (env.ELASTIC_CLOUD_ID && env.ELASTIC_CLOUD_API_KEY && env.ELASTIC_CLOUD_INDEX_NAMESPACE) {
-    console.log("Using ElasticSearch logger");
+    console.log("Using ElasticSearch Cloud logger");
     loggers.push(
-      await ElasticSearchLogger.create(
+      await ElasticSearchCloudLogger.create(
         env.ELASTIC_CLOUD_ID,
         env.ELASTIC_CLOUD_API_KEY,
         env.ELASTIC_CLOUD_INDEX_NAMESPACE,
+        env.ELASTIC_CREATE_INDICES,
+      ),
+    );
+  }
+
+  if (
+    env.ELASTIC_SERVERLESS_ID &&
+    env.ELASTIC_SERVERLESS_API_KEY &&
+    env.ELASTIC_SERVERLESS_INDEX_NAMESPACE
+  ) {
+    console.log("Using ElasticSearch Serverless logger");
+    loggers.push(
+      await ElasticSearchServerlessLogger.create(
+        env.ELASTIC_SERVERLESS_ID,
+        env.ELASTIC_SERVERLESS_API_KEY,
+        env.ELASTIC_SERVERLESS_INDEX_NAMESPACE,
         env.ELASTIC_CREATE_INDICES,
       ),
     );

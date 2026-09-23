@@ -14,6 +14,11 @@ const envZod = z.object({
   ELASTIC_CLOUD_API_KEY: z.string().optional(),
   ELASTIC_CLOUD_INDEX_NAMESPACE: z.string().optional(),
   ELASTIC_CREATE_INDICES: z.coerce.boolean().default(false),
+
+  // ElasticSearch Serverless logging
+  ELASTIC_SERVERLESS_ID: z.string().optional(),
+  ELASTIC_SERVERLESS_API_KEY: z.string().optional(),
+  ELASTIC_SERVERLESS_INDEX_NAMESPACE: z.string().optional(),
 });
 
 dotenv.config({ path: [".env", ".env.defaults"] });

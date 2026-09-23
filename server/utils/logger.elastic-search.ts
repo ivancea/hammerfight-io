@@ -2,9 +2,9 @@
 import { Client as ESClient } from "@elastic/elasticsearch";
 import { MappingProperty, MappingTypeMapping } from "@elastic/elasticsearch/lib/api/types";
 import os from "os";
-import { BaseLogger, Extra, InternalLogger, LOGGER_MODULE, StatsRequest } from "./logger.base";
+import { BaseLogger, Extra, LOGGER_MODULE, StatsRequest } from "./logger.base";
 
-export class ElasticSearchLogger extends BaseLogger {
+export abstract class ElasticSearchLogger extends BaseLogger {
   readonly bufferLimit = 1000;
   readonly hostname: string;
 
@@ -30,20 +30,11 @@ export class ElasticSearchLogger extends BaseLogger {
     }, 10_000);
   }
 
-  static async create(
-    cloudId: string,
-    apiKey: string,
+  protected static async initialize(
+    client: ESClient,
     indexNamespace: string,
     createIndices: boolean,
-  ): Promise<InternalLogger> {
-    const client = new ESClient({
-      cloud: {
-        id: cloudId,
-      },
-      auth: {
-        apiKey,
-      },
-    });
+  ) {
     const logsIndex = `${indexNamespace}_logs`;
     const statsIndex = `${indexNamespace}_stats`;
 
@@ -51,7 +42,7 @@ export class ElasticSearchLogger extends BaseLogger {
       await initializeElasticSearch(client, logsIndex, statsIndex);
     }
 
-    return new ElasticSearchLogger(client, logsIndex, statsIndex);
+    return { logsIndex, statsIndex };
   }
 
   info(message: string, extra?: Extra) {
@@ -269,11 +260,9 @@ async function createOrUpdateIndex(
     console.log(`Creating ElasticSearch "${index}" index`);
     await client.indices.create({
       index,
-      body: {
-        mappings: {
-          dynamic: "strict",
-          properties,
-        },
+      mappings: {
+        dynamic: "strict",
+        properties,
       },
     });
   }

@@ -18,7 +18,7 @@ variable "cloudflare_zone_id" {
   sensitive = true
 }
 
-# ElasticSearch
+# ElasticSearch Cloud
 variable "elastic_cloud_id" {
   type      = string
   sensitive = true
@@ -30,6 +30,22 @@ variable "elastic_cloud_api_key" {
   default   = null
 }
 variable "elastic_cloud_index_namespace" {
+  type    = string
+  default = "hammerfightio"
+}
+
+# ElasticSearch Serverless
+variable "elastic_serverless_id" {
+  type      = string
+  sensitive = true
+  default   = null
+}
+variable "elastic_serverless_api_key" {
+  type      = string
+  sensitive = true
+  default   = null
+}
+variable "elastic_serverless_index_namespace" {
   type    = string
   default = "hammerfightio"
 }

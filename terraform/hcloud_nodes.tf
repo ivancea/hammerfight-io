@@ -5,12 +5,15 @@ resource "hcloud_server" "node-eu" {
   server_type = "cx23"
   user_data = templatefile("initialize-node.sh",
     {
-      git_commit                    = data.git_commit.current_commit.sha1,
-      ssl_certificate               = cloudflare_origin_ca_certificate.tls_cert.certificate,
-      ssl_private_key               = tls_private_key.tls_cert_private_key.private_key_pem,
-      elastic_cloud_id              = var.elastic_cloud_id,
-      elastic_cloud_api_key         = var.elastic_cloud_api_key,
-      elastic_cloud_index_namespace = var.elastic_cloud_index_namespace,
+      git_commit                         = data.git_commit.current_commit.sha1,
+      ssl_certificate                    = cloudflare_origin_ca_certificate.tls_cert.certificate,
+      ssl_private_key                    = tls_private_key.tls_cert_private_key.private_key_pem,
+      elastic_cloud_id                   = var.elastic_cloud_id,
+      elastic_cloud_api_key              = var.elastic_cloud_api_key,
+      elastic_cloud_index_namespace      = var.elastic_cloud_index_namespace,
+      elastic_serverless_id              = var.elastic_serverless_id,
+      elastic_serverless_api_key         = var.elastic_serverless_api_key,
+      elastic_serverless_index_namespace = var.elastic_serverless_index_namespace,
     }
   )
 

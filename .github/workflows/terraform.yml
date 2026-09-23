@@ -53,6 +53,8 @@ jobs:
           TF_VAR_cloudflare_zone_id: ${{ secrets.TF_VAR_CLOUDFLARE_ZONE_ID }}
           TF_VAR_elastic_cloud_id: ${{ secrets.TF_VAR_ELASTIC_CLOUD_ID }}
           TF_VAR_elastic_cloud_api_key: ${{ secrets.TF_VAR_ELASTIC_CLOUD_API_KEY }}
+          TF_VAR_elastic_serverless_id: ${{ secrets.TF_VAR_ELASTIC_SERVERLESS_ID }}
+          TF_VAR_elastic_serverless_api_key: ${{ secrets.TF_VAR_ELASTIC_SERVERLESS_API_KEY }}
         run: |
           if [[ "${{ github.event_name }}" == "schedule" || "${{ github.event.inputs.replace_ssl_cert }}" == "true" ]]; then
             terraform apply -auto-approve -input=false -replace="cloudflare_origin_ca_certificate.tls_cert"
