@@ -3,6 +3,7 @@ import { env } from "../env";
 import { InternalLogger, Logger } from "./logger.base";
 import { ConsoleLogger } from "./logger.console";
 import { ElasticSearchLogger } from "./logger.elastic-search";
+import { MultiLogger } from "./logger.multi";
 
 let logger: InternalLogger = new ConsoleLogger();
 
@@ -13,17 +14,19 @@ export function getLogger(): Logger {
 export async function initializeLogger() {
   logger.destroy();
 
-  let newLogger: InternalLogger | undefined;
+  const loggers = [new ConsoleLogger()];
 
-  if (env.ELASTIC_CLOUD_ID && env.ELASTIC_API_KEY && env.ELASTIC_INDEX_NAMESPACE) {
+  if (env.ELASTIC_CLOUD_ID && env.ELASTIC_CLOUD_API_KEY && env.ELASTIC_CLOUD_INDEX_NAMESPACE) {
     console.log("Using ElasticSearch logger");
-    newLogger = await ElasticSearchLogger.create(
-      env.ELASTIC_CLOUD_ID,
-      env.ELASTIC_API_KEY,
-      env.ELASTIC_INDEX_NAMESPACE,
-      env.ELASTIC_CREATE_INDICES,
+    loggers.push(
+      await ElasticSearchLogger.create(
+        env.ELASTIC_CLOUD_ID,
+        env.ELASTIC_CLOUD_API_KEY,
+        env.ELASTIC_CLOUD_INDEX_NAMESPACE,
+        env.ELASTIC_CREATE_INDICES,
+      ),
     );
   }
 
-  logger = new ConsoleLogger(newLogger);
+  logger = new MultiLogger(loggers);
 }

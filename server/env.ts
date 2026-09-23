@@ -11,8 +11,8 @@ const envZod = z.object({
 
   // ElasticSearch Cloud logging
   ELASTIC_CLOUD_ID: z.string().optional(),
-  ELASTIC_API_KEY: z.string().optional(),
-  ELASTIC_INDEX_NAMESPACE: z.string().optional(),
+  ELASTIC_CLOUD_API_KEY: z.string().optional(),
+  ELASTIC_CLOUD_INDEX_NAMESPACE: z.string().optional(),
   ELASTIC_CREATE_INDICES: z.coerce.boolean().default(false),
 });
 

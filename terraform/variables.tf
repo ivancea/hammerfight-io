@@ -24,12 +24,12 @@ variable "elastic_cloud_id" {
   sensitive = true
   default   = null
 }
-variable "elastic_api_key" {
+variable "elastic_cloud_api_key" {
   type      = string
   sensitive = true
   default   = null
 }
-variable "elastic_index_namespace" {
+variable "elastic_cloud_index_namespace" {
   type    = string
   default = "hammerfightio"
 }

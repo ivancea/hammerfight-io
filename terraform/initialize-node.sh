@@ -14,8 +14,8 @@ export PORT=443
 
 # Other variables
 export ELASTIC_CLOUD_ID="${elastic_cloud_id}"
-export ELASTIC_API_KEY="${elastic_api_key}"
-export ELASTIC_INDEX_NAMESPACE="${elastic_index_namespace}"
+export ELASTIC_CLOUD_API_KEY="${elastic_cloud_api_key}"
+export ELASTIC_CLOUD_INDEX_NAMESPACE="${elastic_cloud_index_namespace}"
 
 # Clone repository
 git clone https://github.com/ivancea/hammerfight-io.git
