@@ -13,6 +13,16 @@ async function startServer() {
 
   server.initialize(env.PORT, env.BASE_PATH);
 
+  const sendHeartbeat = () => {
+    getLogger().stats({
+      name: "server heartbeat",
+      unit: "count",
+      value: 1,
+    });
+  };
+  sendHeartbeat();
+  setInterval(sendHeartbeat, 60_000);
+
   server.io.on("connection", (socket) => {
     getLogger().info(`User ${socket.id} connected`);
 
