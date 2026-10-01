@@ -8,7 +8,7 @@ import { getLogger, initializeLogger } from "./utils/logger";
 import { getPlayer, getRoom } from "./world";
 
 async function startServer() {
-  await initializeLogger();
+  initializeLogger();
   await initRapier();
 
   server.initialize(env.PORT, env.BASE_PATH);
